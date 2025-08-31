@@ -1,0 +1,276 @@
+"use client";
+
+import { useState } from 'react';
+import { createClient } from '@/lib/supabaseClient';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { AlertCircle, Mail, Key } from "lucide-react";
+
+interface LoginState {
+  step: 'email' | 'otp' | 'success';
+  email: string;
+  otp: string;
+  loading: boolean;
+  error: string | null;
+  message: string | null;
+}
+
+export function OTPLogin({ onSuccess }: { onSuccess?: () => void }) {
+  const [state, setState] = useState<LoginState>({
+    step: 'email',
+    email: '',
+    otp: '',
+    loading: false,
+    error: null,
+    message: null
+  });
+
+  const supabase = createClient();
+
+  const sendOTP = async () => {
+    if (!state.email.trim()) {
+      setState(prev => ({ ...prev, error: 'Por favor ingresa tu email' }));
+      return;
+    }
+
+    setState(prev => ({ ...prev, loading: true, error: null }));
+
+    try {
+      // Force OTP email specifically
+      const { error } = await supabase.auth.signInWithOtp({
+        email: state.email.trim(),
+        options: {
+          shouldCreateUser: false,
+          data: {}
+        }
+      });
+
+      if (error) {
+        setState(prev => ({ 
+          ...prev, 
+          loading: false, 
+          error: `Error al enviar código: ${error.message}` 
+        }));
+        return;
+      }
+
+      setState(prev => ({ 
+        ...prev, 
+        loading: false, 
+        step: 'otp',
+        message: `Código OTP enviado a ${state.email}. Revisa tu bandeja de entrada.`,
+        error: null
+      }));
+
+    } catch (error: any) {
+      setState(prev => ({ 
+        ...prev, 
+        loading: false, 
+        error: `Error inesperado: ${error.message}` 
+      }));
+    }
+  };
+
+  const verifyOTP = async () => {
+    if (!state.otp.trim()) {
+      setState(prev => ({ ...prev, error: 'Por favor ingresa el código' }));
+      return;
+    }
+
+    setState(prev => ({ ...prev, loading: true, error: null }));
+
+    try {
+      const { data, error } = await supabase.auth.verifyOtp({
+        email: state.email,
+        token: state.otp.trim(),
+        type: 'email'
+      });
+
+      if (error) {
+        setState(prev => ({ 
+          ...prev, 
+          loading: false, 
+          error: `Código inválido: ${error.message}` 
+        }));
+        return;
+      }
+
+      if (data.user) {
+        // Usar RPC para auto-asignar userid si es necesario
+        const { data: linkResult, error: linkError } = await supabase
+          .rpc('link_staff_to_auth_user', {
+            user_email: data.user.email,
+            auth_user_id: data.user.id
+          });
+
+        if (linkError) {
+          console.error('RPC Error:', linkError);
+          await supabase.auth.signOut();
+          setState(prev => ({ 
+            ...prev, 
+            loading: false, 
+            error: 'Error al verificar acceso del coach' 
+          }));
+          return;
+        }
+
+        if (!linkResult.success) {
+          await supabase.auth.signOut();
+          setState(prev => ({ 
+            ...prev, 
+            loading: false, 
+            error: linkResult.error || 'Este usuario no está registrado como coach en el sistema' 
+          }));
+          return;
+        }
+
+        const staffData = linkResult.staff;
+
+        setState(prev => ({ 
+          ...prev, 
+          loading: false, 
+          step: 'success',
+          message: `¡Bienvenido, ${staffData.name}!`,
+          error: null
+        }));
+
+        // Llamar callback de éxito después de un breve delay
+        setTimeout(() => {
+          onSuccess?.();
+        }, 1500);
+      }
+
+    } catch (error) {
+      setState(prev => ({ 
+        ...prev, 
+        loading: false, 
+        error: `Error inesperado: ${error.message}` 
+      }));
+    }
+  };
+
+  const resetForm = () => {
+    setState({
+      step: 'email',
+      email: '',
+      otp: '',
+      loading: false,
+      error: null,
+      message: null
+    });
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent, action: () => void) => {
+    if (e.key === 'Enter' && !state.loading) {
+      action();
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <Card className="w-full max-w-md">
+        <CardHeader className="text-center">
+          <CardTitle className="text-2xl font-bold text-gray-900">
+            Dashboard Coach
+          </CardTitle>
+          <p className="text-gray-600">
+            {state.step === 'email' && 'Ingresa tu email para recibir un código'}
+            {state.step === 'otp' && 'Ingresa el código enviado a tu email'}
+            {state.step === 'success' && '¡Login exitoso!'}
+          </p>
+        </CardHeader>
+
+        <CardContent className="space-y-4">
+          {state.step === 'email' && (
+            <div className="space-y-4">
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input
+                  type="email"
+                  placeholder="coach@ejemplo.com"
+                  value={state.email}
+                  onChange={(e) => setState(prev => ({ ...prev, email: e.target.value, error: null }))}
+                  onKeyPress={(e) => handleKeyPress(e, sendOTP)}
+                  className="pl-10"
+                  disabled={state.loading}
+                />
+              </div>
+              <Button 
+                onClick={sendOTP} 
+                className="w-full"
+                disabled={state.loading}
+              >
+                {state.loading ? 'Enviando...' : 'Enviar Código'}
+              </Button>
+            </div>
+          )}
+
+          {state.step === 'otp' && (
+            <div className="space-y-4">
+              <div className="relative">
+                <Key className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input
+                  type="text"
+                  placeholder="123456"
+                  value={state.otp}
+                  onChange={(e) => setState(prev => ({ ...prev, otp: e.target.value, error: null }))}
+                  onKeyPress={(e) => handleKeyPress(e, verifyOTP)}
+                  className="pl-10 text-center text-lg tracking-widest"
+                  maxLength={6}
+                  disabled={state.loading}
+                />
+              </div>
+              <div className="space-y-2">
+                <Button 
+                  onClick={verifyOTP} 
+                  className="w-full"
+                  disabled={state.loading}
+                >
+                  {state.loading ? 'Verificando...' : 'Verificar Código'}
+                </Button>
+                <Button 
+                  onClick={resetForm} 
+                  variant="outline" 
+                  className="w-full"
+                  disabled={state.loading}
+                >
+                  Cambiar Email
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {state.step === 'success' && (
+            <div className="text-center space-y-4">
+              <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
+                <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+              </div>
+              <p className="text-green-600 font-medium">Redirigiendo al dashboard...</p>
+            </div>
+          )}
+
+          {state.error && (
+            <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700">
+              <AlertCircle className="h-4 w-4 flex-shrink-0" />
+              <span className="text-sm">{state.error}</span>
+            </div>
+          )}
+
+          {state.message && !state.error && (
+            <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg text-blue-700">
+              <span className="text-sm">{state.message}</span>
+            </div>
+          )}
+
+          <div className="text-center text-xs text-gray-500 mt-6">
+            Solo coaches registrados pueden acceder al sistema
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
