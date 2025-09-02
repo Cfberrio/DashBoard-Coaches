@@ -1,28 +1,25 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   getCurrentStaff,
   getMyTeams,
   getUpcomingOccurrencesForTeams,
   getActiveRoster,
-  seedAttendance,
-  getAttendanceForOccurrence,
-  setAttendance,
-  getAttendanceHistory,
+  getAssistanceForOccurrence,
+  setAssistance,
   getTeamById,
-  getStudentById
-} from './api';
-import { AttendanceStatus } from './types';
+  getStudentById,
+} from "./api";
 
 // Query keys for React Query
 export const QUERY_KEYS = {
-  currentStaff: ['currentStaff'] as const,
-  myTeams: (staffId: string) => ['myTeams', staffId] as const,
-  upcomingOccurrences: (teamIds: string[]) => ['upcomingOccurrences', teamIds] as const,
-  roster: (teamId: string) => ['roster', teamId] as const,
-  attendance: (occurrenceId: string) => ['attendance', occurrenceId] as const,
-  attendanceHistory: (attendanceId: string) => ['attendanceHistory', attendanceId] as const,
-  team: (teamId: string) => ['team', teamId] as const,
-  student: (studentId: string) => ['student', studentId] as const,
+  currentStaff: ["currentStaff"] as const,
+  myTeams: (staffId: string) => ["myTeams", staffId] as const,
+  upcomingOccurrences: (teamIds: string[]) =>
+    ["upcomingOccurrences", teamIds] as const,
+  roster: (teamId: string) => ["roster", teamId] as const,
+  assistance: (occurrenceId: string) => ["assistance", occurrenceId] as const,
+  team: (teamId: string) => ["team", teamId] as const,
+  student: (studentId: string) => ["student", studentId] as const,
 };
 
 /**
@@ -42,7 +39,7 @@ export function useCurrentStaff() {
  */
 export function useMyTeams() {
   return useQuery({
-    queryKey: QUERY_KEYS.myTeams('current'),
+    queryKey: QUERY_KEYS.myTeams("current"),
     queryFn: getMyTeams,
     staleTime: 2 * 60 * 1000, // 2 minutes
   });
@@ -53,7 +50,7 @@ export function useMyTeams() {
  */
 export function useUpcomingOccurrences() {
   return useQuery({
-    queryKey: QUERY_KEYS.upcomingOccurrences(['current']),
+    queryKey: QUERY_KEYS.upcomingOccurrences(["current"]),
     queryFn: getUpcomingOccurrencesForTeams,
     staleTime: 1 * 60 * 1000, // 1 minute
     refetchInterval: 2 * 60 * 1000, // Auto-refresh every 2 minutes
@@ -65,7 +62,7 @@ export function useUpcomingOccurrences() {
  */
 export function useRoster(teamId?: string) {
   return useQuery({
-    queryKey: QUERY_KEYS.roster(teamId || ''),
+    queryKey: QUERY_KEYS.roster(teamId || ""),
     queryFn: () => getActiveRoster(teamId!),
     enabled: !!teamId,
     staleTime: 5 * 60 * 1000, // 5 minutes
@@ -73,27 +70,15 @@ export function useRoster(teamId?: string) {
 }
 
 /**
- * Hook to get attendance for an occurrence
+ * Hook to get assistance for an occurrence
  */
-export function useAttendance(occurrenceId?: string) {
+export function useAssistance(occurrenceId?: string) {
   return useQuery({
-    queryKey: QUERY_KEYS.attendance(occurrenceId || ''),
-    queryFn: () => getAttendanceForOccurrence(occurrenceId!),
+    queryKey: QUERY_KEYS.assistance(occurrenceId || ""),
+    queryFn: () => getAssistanceForOccurrence(occurrenceId!),
     enabled: !!occurrenceId,
     staleTime: 30 * 1000, // 30 seconds
     refetchInterval: 60 * 1000, // Auto-refresh every minute
-  });
-}
-
-/**
- * Hook to get attendance history
- */
-export function useAttendanceHistory(attendanceId?: string) {
-  return useQuery({
-    queryKey: QUERY_KEYS.attendanceHistory(attendanceId || ''),
-    queryFn: () => getAttendanceHistory(attendanceId!),
-    enabled: !!attendanceId,
-    staleTime: 1 * 60 * 1000, // 1 minute
   });
 }
 
@@ -102,7 +87,7 @@ export function useAttendanceHistory(attendanceId?: string) {
  */
 export function useTeam(teamId?: string) {
   return useQuery({
-    queryKey: QUERY_KEYS.team(teamId || ''),
+    queryKey: QUERY_KEYS.team(teamId || ""),
     queryFn: () => getTeamById(teamId!),
     enabled: !!teamId,
     staleTime: 5 * 60 * 1000, // 5 minutes
@@ -114,7 +99,7 @@ export function useTeam(teamId?: string) {
  */
 export function useStudent(studentId?: string) {
   return useQuery({
-    queryKey: QUERY_KEYS.student(studentId || ''),
+    queryKey: QUERY_KEYS.student(studentId || ""),
     queryFn: () => getStudentById(studentId!),
     enabled: !!studentId,
     staleTime: 5 * 60 * 1000, // 5 minutes
@@ -122,44 +107,25 @@ export function useStudent(studentId?: string) {
 }
 
 /**
- * Mutation hook to seed attendance for an occurrence
+ * Mutation hook to set assistance status
  */
-export function useSeedAttendance() {
+export function useSetAssistance() {
   const queryClient = useQueryClient();
-  
-  return useMutation({
-    mutationFn: (occurrenceId: string) => seedAttendance(occurrenceId),
-    onSuccess: (_, occurrenceId) => {
-      // Invalidate attendance query to refresh the list
-      queryClient.invalidateQueries({
-        queryKey: QUERY_KEYS.attendance(occurrenceId)
-      });
-    },
-  });
-}
 
-/**
- * Mutation hook to set attendance status
- */
-export function useSetAttendance() {
-  const queryClient = useQueryClient();
-  
   return useMutation({
     mutationFn: ({
       occurrenceId,
       studentId,
-      status,
-      note
+      assisted,
     }: {
       occurrenceId: string;
       studentId: string;
-      status: AttendanceStatus;
-      note?: string;
-    }) => setAttendance(occurrenceId, studentId, status, note),
+      assisted: boolean;
+    }) => setAssistance(occurrenceId, studentId, assisted),
     onSuccess: (_, { occurrenceId }) => {
-      // Invalidate attendance query to refresh the list
+      // Invalidate assistance query to refresh the list
       queryClient.invalidateQueries({
-        queryKey: QUERY_KEYS.attendance(occurrenceId)
+        queryKey: QUERY_KEYS.assistance(occurrenceId),
       });
     },
   });
@@ -177,7 +143,13 @@ export function useDashboardData() {
     staff: currentStaffQuery,
     teams: myTeamsQuery,
     occurrences: upcomingOccurrencesQuery,
-    isLoading: currentStaffQuery.isLoading || myTeamsQuery.isLoading || upcomingOccurrencesQuery.isLoading,
-    error: currentStaffQuery.error || myTeamsQuery.error || upcomingOccurrencesQuery.error,
+    isLoading:
+      currentStaffQuery.isLoading ||
+      myTeamsQuery.isLoading ||
+      upcomingOccurrencesQuery.isLoading,
+    error:
+      currentStaffQuery.error ||
+      myTeamsQuery.error ||
+      upcomingOccurrencesQuery.error,
   };
 }

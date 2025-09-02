@@ -3,7 +3,12 @@ export type Team = {
   name: string;
   description?: string | null;
   isactive: boolean;
-  location?: string; // Location from school table
+  participants?: number;
+  price?: number;
+  schoolid?: number;
+  created_at?: string;
+  updated_at?: string;
+  logo?: string | null;
 };
 
 export type Staff = {
@@ -24,13 +29,18 @@ export type Session = {
   endtime: string;
   daysofweek: string;
   repeat: string;
-  location?: string | null;
 };
 
 export type Student = {
   studentid: string;
   firstname: string;
   lastname: string;
+  dob?: string;
+  grade?: string;
+  ecname?: string;
+  ecphone?: string;
+  ecrelationship?: string;
+  StudentDismisall?: string;
 };
 
 export type Enrollment = {
@@ -40,49 +50,43 @@ export type Enrollment = {
   isactive: boolean;
 };
 
-export type AttendanceStatus = 'present' | 'late' | 'excused' | 'absent';
-
-export type Attendance = {
+export type Assistance = {
   id: string;
-  occurrenceid: string;
+  sessionid: string;
   studentid: string;
-  status: AttendanceStatus;
-  checked_in_at: string;
-  checked_in_by: string | null;
-  note?: string | null;
+  assisted: boolean;
+  date: string; // Fecha específica de la sesión (YYYY-MM-DD)
 };
 
-export type AttendanceHistory = {
-  id: string;
-  attendanceid: string;
-  old_status: AttendanceStatus | null;
-  new_status: AttendanceStatus | null;
-  changed_by: string | null;
-  changed_at: string;
-  note?: string | null;
+export type School = {
+  schoolid: number;
+  name: string;
+  location: string;
+};
+
+export type Parent = {
+  parentid: string;
+  firstname: string;
+  lastname: string;
+  email: string;
+  phone: string;
 };
 
 // Combined types for UI
-export type StudentWithAttendance = Student & {
-  attendance?: Attendance;
+export type StudentWithAssistance = Student & {
+  assistance?: Assistance;
+  enrollment?: Enrollment;
 };
 
 export type SessionWithTeam = Session & {
-  team?: Pick<Team, 'name'>;
+  team?: Pick<Team, "name" | "description">;
 };
 
-// Helper type for calculating session instances
-export type SessionInstance = {
-  sessionid: string;
-  date: string; // YYYY-MM-DD
-  startDateTime: Date;
-  endDateTime: Date;
-  teamid: string;
-  coachid: string;
-  location?: string | null;
+export type TeamWithSchool = Team & {
+  school?: Pick<School, "name" | "location">;
 };
 
-// Type for session occurrences from staff_my_occurrences_v view
+// Type for session occurrences (calculated from session data)
 export type SessionOccurrence = {
   id: string; // Composite ID: sessionid_occurrence_date
   sessionid: string;

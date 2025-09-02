@@ -1,40 +1,51 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import { createClient } from '@/lib/supabaseClient';
-import { OTPLogin } from '@/components/auth/otp-login';
-import { CoachDashboard } from '@/components/coach-dashboard';
-import { CoachDataProvider } from '@/features/coach/wiring';
-
+import { useState, useEffect } from "react";
+import { createClient } from "@/lib/supabaseClient";
+import { OTPLogin } from "@/components/auth/otp-login";
+import { CoachDashboard } from "@/components/coach-dashboard";
+import { CoachDataProvider } from "@/features/coach/wiring";
 
 export default function Home() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [mounted, setMounted] = useState(false);
   const supabase = createClient();
+
+  // Evitar problemas de hidratación
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Verificar estado de autenticación al cargar
   useEffect(() => {
+    if (!mounted) return;
+
     checkAuth();
 
     // Suscribirse a cambios de sesión
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'SIGNED_IN' && session) {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === "SIGNED_IN" && session) {
         // Verificar que sea un coach válido
         const isValidCoach = await verifyCoachAccess(session.user.id);
         setIsAuthenticated(isValidCoach);
-      } else if (event === 'SIGNED_OUT') {
+      } else if (event === "SIGNED_OUT") {
         setIsAuthenticated(false);
       }
       setIsLoading(false);
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [mounted]);
 
   const checkAuth = async () => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
       if (session) {
         // Verificar que el usuario tenga acceso como coach
         const isValidCoach = await verifyCoachAccess(session.user.id);
@@ -43,7 +54,7 @@ export default function Home() {
         setIsAuthenticated(false);
       }
     } catch (error) {
-      console.error('Error checking auth:', error);
+      console.error("Error checking auth:", error);
       setIsAuthenticated(false);
     } finally {
       setIsLoading(false);
@@ -53,14 +64,14 @@ export default function Home() {
   const verifyCoachAccess = async (userId: string): Promise<boolean> => {
     try {
       const { data, error } = await supabase
-        .from('staff')
-        .select('id')
-        .eq('userid', userId)
+        .from("staff")
+        .select("id")
+        .eq("userid", userId)
         .single();
 
       return !error && !!data;
     } catch (error) {
-      console.error('Error verifying coach access:', error);
+      console.error("Error verifying coach access:", error);
       return false;
     }
   };
@@ -73,6 +84,11 @@ export default function Home() {
     await supabase.auth.signOut();
     setIsAuthenticated(false);
   };
+
+  // No renderizar nada hasta que el componente esté montado en el cliente
+  if (!mounted) {
+    return null;
+  }
 
   // Mostrar loading mientras se verifica autenticación
   if (isLoading) {
@@ -106,7 +122,7 @@ export default function Home() {
             </button>
           </div>
         </div>
-        
+
         {/* Dashboard principal */}
         <CoachDashboard />
       </div>
