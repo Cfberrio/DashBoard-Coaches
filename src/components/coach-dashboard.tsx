@@ -190,10 +190,10 @@ export function CoachDashboard() {
     <div className="min-h-screen bg-gray-50 p-2 sm:p-4 lg:p-6">
       <div className="mb-4 sm:mb-6">
         <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
-          Dashboard del Entrenador
+          Coach Dashboard
         </h1>
         <p className="text-sm sm:text-base text-gray-600">
-          Bienvenido, {staff.name} • {teams?.length || 0} equipos asignados
+          Welcome, {staff.name} • {teams?.length || 0} assigned teams
         </p>
       </div>
 
@@ -201,7 +201,7 @@ export function CoachDashboard() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
             <Users className="h-4 w-4 sm:h-5 sm:w-5" />
-            Mis Equipos
+            My Teams
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -209,7 +209,7 @@ export function CoachDashboard() {
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
               <Input
-                placeholder="Buscar en mis equipos..."
+                placeholder="Search in my teams..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10 text-sm sm:text-base"
@@ -227,9 +227,9 @@ export function CoachDashboard() {
                   <span className="font-medium text-sm sm:text-base">
                     {team.name}
                   </span>
-                  <span className="text-xs opacity-70">Equipo activo</span>
+                  <span className="text-xs opacity-70">Active team</span>
                   <span className="text-xs opacity-60 line-clamp-2">
-                    {team.description || "Sin descripción"}
+                    {team.description || "No description"}
                   </span>
                   {team.school && (
                     <span className="text-xs opacity-50">
@@ -386,7 +386,7 @@ export function CoachDashboard() {
               }
               disabled={!currentOccurrence}
             >
-              {attendanceMode ? "Finalizar" : "Iniciar Check-in"}
+              {attendanceMode ? "Finish" : "Start Check-in"}
             </Button>
             <Button
               variant="outline"
@@ -394,7 +394,7 @@ export function CoachDashboard() {
               onClick={() => setShowHistory(!showHistory)}
             >
               <History className="h-4 w-4 mr-2" />
-              {showHistory ? "Ocultar" : "Ver"} Historial
+              {showHistory ? "Hide" : "View"} History
             </Button>
           </CardContent>
         </Card>

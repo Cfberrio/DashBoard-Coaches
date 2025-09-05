@@ -171,7 +171,7 @@ export function AttendanceTracker() {
                       <div>
                         <p className="font-medium text-foreground">{player.name}</p>
                         <p className="text-sm text-muted-foreground">
-                          {player.time ? `Llegada: ${player.time}` : "Sin registro"}
+                          {player.time ? `Arrival: ${player.time}` : "No record"}
                         </p>
                       </div>
                     </div>
@@ -222,7 +222,7 @@ export function AttendanceTracker() {
                       <div>
                         <p className="font-medium text-foreground">{player.name}</p>
                         <p className="text-sm text-muted-foreground">
-                          {player.time ? `Llegada: ${player.time}` : "Sin registro"}
+                          {player.time ? `Arrival: ${player.time}` : "No record"}
                         </p>
                       </div>
                     </div>

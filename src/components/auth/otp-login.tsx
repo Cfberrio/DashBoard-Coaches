@@ -28,7 +28,7 @@ export function OTPLogin() {
 
   const sendOTP = async () => {
     if (!state.email.trim()) {
-      setState((prev) => ({ ...prev, error: "Por favor ingresa tu email" }));
+      setState((prev) => ({ ...prev, error: "Please enter your email" }));
       return;
     }
 
@@ -71,7 +71,7 @@ export function OTPLogin() {
 
   const verifyOTP = async () => {
     if (!state.otp.trim()) {
-      setState((prev) => ({ ...prev, error: "Por favor ingresa el código" }));
+      setState((prev) => ({ ...prev, error: "Please enter the code" }));
       return;
     }
 
@@ -142,9 +142,9 @@ export function OTPLogin() {
           </CardTitle>
           <p className="text-gray-600">
             {state.step === "email" &&
-              "Ingresa tu email para recibir un código"}
-            {state.step === "otp" && "Ingresa el código enviado a tu email"}
-            {state.step === "success" && "¡Login exitoso!"}
+              "Enter your email to receive a code"}
+            {state.step === "otp" && "Enter the code sent to your email"}
+            {state.step === "success" && "Login successful!"}
           </p>
         </CardHeader>
 
@@ -174,7 +174,7 @@ export function OTPLogin() {
                 className="w-full"
                 disabled={state.loading}
               >
-                {state.loading ? "Enviando..." : "Enviar Código"}
+                {state.loading ? "Sending..." : "Send Code"}
               </Button>
             </div>
           )}

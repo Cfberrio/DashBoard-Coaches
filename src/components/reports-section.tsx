@@ -9,32 +9,32 @@ export function ReportsSection() {
   const reportTypes = [
     {
       id: 1,
-      title: "Reporte de Asistencia Mensual",
-      description: "Resumen completo de asistencia por equipo y jugador",
+      title: "Monthly Attendance Report",
+      description: "Complete attendance summary by team and player",
       icon: <Calendar className="h-5 w-5" />,
       lastGenerated: "2025-01-20",
       status: "available",
     },
     {
       id: 2,
-      title: "Análisis de Rendimiento",
-      description: "Estadísticas de rendimiento y progreso de jugadores",
+      title: "Performance Analysis",
+      description: "Player performance and progress statistics",
       icon: <TrendingUp className="h-5 w-5" />,
       lastGenerated: "2025-01-18",
       status: "available",
     },
     {
       id: 3,
-      title: "Reporte de Equipos",
-      description: "Información general y estadísticas por equipo",
+      title: "Team Report",
+      description: "General information and statistics by team",
       icon: <Users className="h-5 w-5" />,
       lastGenerated: "2025-01-15",
       status: "available",
     },
     {
       id: 4,
-      title: "Historial de Entrenamientos",
-      description: "Registro detallado de sesiones de entrenamiento",
+      title: "Training History",
+      description: "Detailed record of training sessions",
       icon: <Clock className="h-5 w-5" />,
       lastGenerated: null,
       status: "pending",
@@ -42,17 +42,17 @@ export function ReportsSection() {
   ]
 
   const quickStats = [
-    { label: "Asistencia Promedio", value: "87%", trend: "+5%" },
-    { label: "Jugadores Activos", value: "40", trend: "+2" },
-    { label: "Entrenamientos/Semana", value: "6", trend: "0" },
-    { label: "Equipos Gestionados", value: "2", trend: "0" },
+    { label: "Average Attendance", value: "87%", trend: "+5%" },
+    { label: "Active Players", value: "40", trend: "+2" },
+    { label: "Trainings/Week", value: "6", trend: "0" },
+    { label: "Managed Teams", value: "2", trend: "0" },
   ]
 
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-foreground mb-2">Reportes y Estadísticas</h2>
-        <p className="text-muted-foreground">Genera y descarga reportes detallados de tus equipos</p>
+        <h2 className="text-2xl font-bold text-foreground mb-2">Reports and Statistics</h2>
+        <p className="text-muted-foreground">Generate and download detailed reports of your teams</p>
       </div>
 
       {/* Quick Stats */}
@@ -91,11 +91,11 @@ export function ReportsSection() {
                     <h3 className="font-medium text-foreground">{report.title}</h3>
                     <p className="text-sm text-muted-foreground">{report.description}</p>
                     {report.lastGenerated && (
-                      <p className="text-xs text-muted-foreground mt-1">Último: {report.lastGenerated}</p>
+                      <p className="text-xs text-muted-foreground mt-1">Last: {report.lastGenerated}</p>
                     )}
                   </div>
                   <Badge variant={report.status === "available" ? "default" : "secondary"}>
-                    {report.status === "available" ? "Disponible" : "Pendiente"}
+                    {report.status === "available" ? "Available" : "Pending"}
                   </Badge>
                 </div>
                 <div className="flex gap-2">

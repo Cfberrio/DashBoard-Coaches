@@ -21,18 +21,18 @@ interface TeamOverviewProps {
 export function TeamOverview({ teams }: TeamOverviewProps) {
   // Mock player data
   const mockPlayers = [
-    { id: 1, name: "Juan Pérez", position: "Delantero", attendance: 95 },
-    { id: 2, name: "María García", position: "Mediocampo", attendance: 88 },
-    { id: 3, name: "Carlos López", position: "Defensa", attendance: 92 },
-    { id: 4, name: "Ana Martínez", position: "Portero", attendance: 100 },
-    { id: 5, name: "Diego Rodríguez", position: "Delantero", attendance: 85 },
+    { id: 1, name: "John Smith", position: "Forward", attendance: 95 },
+    { id: 2, name: "Maria Garcia", position: "Midfielder", attendance: 88 },
+    { id: 3, name: "Carlos Lopez", position: "Defender", attendance: 92 },
+    { id: 4, name: "Ana Martinez", position: "Goalkeeper", attendance: 100 },
+    { id: 5, name: "Diego Rodriguez", position: "Forward", attendance: 85 },
   ]
 
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-foreground mb-2">Mis Equipos</h2>
-        <p className="text-muted-foreground">Gestiona y supervisa todos tus equipos asignados</p>
+        <h2 className="text-2xl font-bold text-foreground mb-2">My Teams</h2>
+        <p className="text-muted-foreground">Manage and supervise all your assigned teams</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -49,7 +49,7 @@ export function TeamOverview({ teams }: TeamOverviewProps) {
                     <CardDescription>{team.category}</CardDescription>
                   </div>
                 </div>
-                <Badge variant="secondary">{team.players} jugadores</Badge>
+                <Badge variant="secondary">{team.players} players</Badge>
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -58,14 +58,14 @@ export function TeamOverview({ teams }: TeamOverviewProps) {
                 <div className="flex items-center gap-2">
                   <Calendar className="h-4 w-4 text-muted-foreground" />
                   <div>
-                    <p className="text-sm font-medium text-foreground">Próximo Partido</p>
+                    <p className="text-sm font-medium text-foreground">Next Game</p>
                     <p className="text-xs text-muted-foreground">{team.nextGame}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
                   <Trophy className="h-4 w-4 text-muted-foreground" />
                   <div>
-                    <p className="text-sm font-medium text-foreground">Temporada</p>
+                    <p className="text-sm font-medium text-foreground">Season</p>
                     <p className="text-xs text-muted-foreground">2024-2025</p>
                   </div>
                 </div>
@@ -73,7 +73,7 @@ export function TeamOverview({ teams }: TeamOverviewProps) {
 
               {/* Recent Players */}
               <div>
-                <h4 className="text-sm font-medium text-foreground mb-3">Jugadores Destacados</h4>
+                <h4 className="text-sm font-medium text-foreground mb-3">Featured Players</h4>
                 <div className="space-y-2">
                   {mockPlayers.slice(0, 3).map((player) => (
                     <div key={player.id} className="flex items-center justify-between p-2 rounded-lg bg-muted/50">

@@ -113,7 +113,7 @@ export function AuthDebug() {
             className="flex-1"
           />
           <Button onClick={testAuthFlow} disabled={loading || !email.trim()}>
-            {loading ? "Probando..." : "Probar"}
+            {loading ? "Testing..." : "Test"}
           </Button>
         </div>
 
