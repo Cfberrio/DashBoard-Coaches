@@ -1,38 +1,37 @@
 "use client";
 
-import { useState } from 'react';
-import { useAuth } from '@/features/auth/useAuth';
+import { useState } from "react";
+import { useAuth } from "@/features/auth/useAuth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 export function SimpleTest() {
   const { isAuthenticated, loading, user, signOut } = useAuth();
-  const [email, setEmail] = useState('');
-  const [code, setCode] = useState('');
-  const [step, setStep] = useState<'email' | 'code'>('email');
-  const [message, setMessage] = useState('');
+  const [email, setEmail] = useState("");
+  const [code, setCode] = useState("");
+  const [step, setStep] = useState<"email" | "code">("email");
+  const [message, setMessage] = useState("");
 
   const handleSendCode = () => {
-    console.log('Enviando código a:', email);
+    console.log("Enviando código a:", email);
     setMessage(`Código enviado a ${email}. Usa el código: 123456`);
-    setStep('code');
+    setStep("code");
   };
 
   const handleVerifyCode = async () => {
-    const { createClient } = await import('@/lib/supabaseClient');
-    const supabase = createClient();
-    
+    const { supabase } = await import("@/lib/supabaseClient");
+
     const { data, error } = await supabase.auth.verifyOtp({
       email,
       token: code,
-      type: 'email'
+      type: "email",
     });
 
     if (error) {
       setMessage(`Error: ${error.message}`);
     } else if (data.user) {
-      setMessage('¡Login exitoso!');
+      setMessage("¡Login exitoso!");
     }
   };
 
@@ -70,7 +69,7 @@ export function SimpleTest() {
           <CardTitle>Prueba Simple de Login</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {step === 'email' && (
+          {step === "email" && (
             <div className="space-y-4">
               <Input
                 type="email"
@@ -84,7 +83,7 @@ export function SimpleTest() {
             </div>
           )}
 
-          {step === 'code' && (
+          {step === "code" && (
             <div className="space-y-4">
               <p className="text-sm text-gray-600">Código enviado a {email}</p>
               <Input
@@ -96,9 +95,9 @@ export function SimpleTest() {
               <Button onClick={handleVerifyCode} className="w-full">
                 Verificar
               </Button>
-              <Button 
-                onClick={() => setStep('email')} 
-                variant="outline" 
+              <Button
+                onClick={() => setStep("email")}
+                variant="outline"
                 className="w-full"
               >
                 Cambiar Email
@@ -116,7 +115,3 @@ export function SimpleTest() {
     </div>
   );
 }
-
-
-
-

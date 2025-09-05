@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabaseClient";
 import {
   Team,
   Staff,
@@ -12,7 +12,6 @@ import {
  * Get current staff member based on authenticated user
  */
 export async function getCurrentStaff(): Promise<Staff> {
-  const supabase = createClient();
   const {
     data: { user },
     error: authErr,
@@ -46,8 +45,6 @@ export async function getCurrentStaff(): Promise<Staff> {
  * Using session table where coach is assigned (session.coachid)
  */
 export async function getMyTeams(): Promise<TeamWithSchool[]> {
-  const supabase = createClient();
-
   // First get current user
   const {
     data: { user },
@@ -138,8 +135,6 @@ export async function getMyTeams(): Promise<TeamWithSchool[]> {
 export async function getUpcomingOccurrencesForTeams(): Promise<
   SessionOccurrence[]
 > {
-  const supabase = createClient();
-
   // First get teams for current user
   const teams = await getMyTeams();
   if (teams.length === 0) {
@@ -287,8 +282,6 @@ export async function getUpcomingOccurrencesForTeams(): Promise<
  * Get active roster (students) for a specific team using enrollment table
  */
 export async function getActiveRoster(teamId: string): Promise<Student[]> {
-  const supabase = createClient();
-
   // Get active enrollments with student data
   const { data, error } = await supabase
     .from("enrollment")
@@ -338,8 +331,6 @@ export async function getActiveRoster(teamId: string): Promise<Student[]> {
 export async function getAssistanceForOccurrence(
   occurrenceId: string
 ): Promise<Assistance[]> {
-  const supabase = createClient();
-
   // Parse composite ID to get sessionid and occurrence_date
   const [sessionId, occurrenceDate] = occurrenceId.split("_");
 
@@ -364,8 +355,6 @@ export async function setAssistance(
   studentId: string,
   assisted: boolean
 ): Promise<void> {
-  const supabase = createClient();
-
   // Parse composite ID to get sessionid and occurrence_date
   const [sessionId, occurrenceDate] = occurrenceId.split("_");
 
@@ -376,9 +365,9 @@ export async function setAssistance(
     .eq("sessionid", sessionId)
     .eq("studentid", studentId)
     .eq("date", occurrenceDate)
-    .single();
+    .maybeSingle();
 
-  if (checkError && checkError.code !== "PGRST116") {
+  if (checkError) {
     throw new Error(
       `Error al verificar asistencia existente: ${checkError.message}`
     );
@@ -417,8 +406,6 @@ export async function setAssistance(
 export async function getTeamById(
   teamId: string
 ): Promise<TeamWithSchool | null> {
-  const supabase = createClient();
-
   const { data, error } = await supabase
     .from("team")
     .select(
@@ -447,8 +434,6 @@ export async function getTeamById(
 export async function getStudentById(
   studentId: string
 ): Promise<Student | null> {
-  const supabase = createClient();
-
   const { data, error } = await supabase
     .from("student")
     .select("*")

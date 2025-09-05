@@ -1,101 +1,25 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { createClient } from "@/lib/supabaseClient";
+import { useAuth } from "@/features/auth/useAuth";
 import { OTPLogin } from "@/components/auth/otp-login";
 import { CoachDashboard } from "@/components/coach-dashboard";
 import { CoachDataProvider } from "@/features/coach/wiring";
 
 export default function Home() {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [mounted, setMounted] = useState(false);
-  const supabase = createClient();
-
-  // Evitar problemas de hidratación
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  // Verificar estado de autenticación al cargar
-  useEffect(() => {
-    if (!mounted) return;
-
-    checkAuth();
-
-    // Suscribirse a cambios de sesión
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === "SIGNED_IN" && session) {
-        // Verificar que sea un coach válido
-        const isValidCoach = await verifyCoachAccess(session.user.id);
-        setIsAuthenticated(isValidCoach);
-      } else if (event === "SIGNED_OUT") {
-        setIsAuthenticated(false);
-      }
-      setIsLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
-  }, [mounted]);
-
-  const checkAuth = async () => {
-    try {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-
-      if (session) {
-        // Verificar que el usuario tenga acceso como coach
-        const isValidCoach = await verifyCoachAccess(session.user.id);
-        setIsAuthenticated(isValidCoach);
-      } else {
-        setIsAuthenticated(false);
-      }
-    } catch (error) {
-      console.error("Error checking auth:", error);
-      setIsAuthenticated(false);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const verifyCoachAccess = async (userId: string): Promise<boolean> => {
-    try {
-      const { data, error } = await supabase
-        .from("staff")
-        .select("id")
-        .eq("userid", userId)
-        .single();
-
-      return !error && !!data;
-    } catch (error) {
-      console.error("Error verifying coach access:", error);
-      return false;
-    }
-  };
-
-  const handleLoginSuccess = () => {
-    setIsAuthenticated(true);
-  };
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    setIsAuthenticated(false);
-  };
-
-  // No renderizar nada hasta que el componente esté montado en el cliente
-  if (!mounted) {
-    return null;
-  }
+  const { isAuthenticated, loading, signOut } = useAuth();
 
   // Mostrar loading mientras se verifica autenticación
-  if (isLoading) {
+  if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
+      <div
+        className="min-h-screen bg-gray-50 flex items-center justify-center"
+        suppressHydrationWarning
+      >
+        <div className="text-center" suppressHydrationWarning>
+          <div
+            className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"
+            suppressHydrationWarning
+          ></div>
           <p className="text-sm text-gray-600">Verificando sesión...</p>
         </div>
       </div>
@@ -104,18 +28,21 @@ export default function Home() {
 
   // Si no está autenticado, mostrar login
   if (!isAuthenticated) {
-    return <OTPLogin onSuccess={handleLoginSuccess} />;
+    return <OTPLogin />;
   }
 
   // Si está autenticado, mostrar dashboard
   return (
     <CoachDataProvider>
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50" suppressHydrationWarning>
         {/* Header con logout */}
-        <div className="bg-white border-b border-gray-200 px-4 py-2">
-          <div className="flex justify-end">
+        <div
+          className="bg-white border-b border-gray-200 px-4 py-2"
+          suppressHydrationWarning
+        >
+          <div className="flex justify-end" suppressHydrationWarning>
             <button
-              onClick={handleLogout}
+              onClick={signOut}
               className="text-sm text-gray-600 hover:text-gray-900"
             >
               Cerrar Sesión

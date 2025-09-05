@@ -12,6 +12,13 @@ const nextConfig: NextConfig = {
     // Remover console.log en producción
     removeConsole: process.env.NODE_ENV === "production",
   },
+  // Configuración para manejar extensiones del navegador
+  onDemandEntries: {
+    // Período en ms donde las páginas se mantienen en memoria
+    maxInactiveAge: 25 * 1000,
+    // Número de páginas que se deben mantener simultáneamente
+    pagesBufferLength: 2,
+  },
   // Configuración de headers para mejorar la seguridad
   async headers() {
     return [
