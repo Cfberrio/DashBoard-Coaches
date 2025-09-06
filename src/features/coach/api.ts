@@ -111,22 +111,28 @@ export async function getMyTeams(): Promise<TeamWithSchool[]> {
   }
 
   // Transform to match our TeamWithSchool type
-  return (data || []).map((item) => ({
-    teamid: item.teamid,
-    name: item.name,
-    description: item.description || "",
-    isactive: item.isactive,
-    participants: item.participants,
-    price: item.price,
-    schoolid: item.schoolid,
-    school: item.school && item.school.length > 0
-      ? {
-          schoolid: item.school[0].schoolid,
-          name: item.school[0].name,
-          location: item.school[0].location,
-        }
-      : undefined,
-  })) as TeamWithSchool[];
+  return (data || []).map((item) => {
+    const schoolData = Array.isArray(item.school) && item.school.length > 0 
+      ? item.school[0] 
+      : item.school;
+    
+    return {
+      teamid: item.teamid,
+      name: item.name,
+      description: item.description || "",
+      isactive: item.isactive,
+      participants: item.participants,
+      price: item.price,
+      schoolid: item.schoolid,
+      school: schoolData
+        ? {
+            schoolid: (schoolData as { schoolid: number; name: string; location: string }).schoolid,
+            name: (schoolData as { schoolid: number; name: string; location: string }).name,
+            location: (schoolData as { schoolid: number; name: string; location: string }).location,
+          }
+        : undefined,
+    };
+  }) as TeamWithSchool[];
 }
 
 /**
@@ -310,17 +316,23 @@ export async function getActiveRoster(teamId: string): Promise<Student[]> {
   }
 
   // Transform to Student format and sort by lastname
-  const students = (data || []).map((item) => ({
-    studentid: item.studentid,
-    firstname: item.student[0].firstname,
-    lastname: item.student[0].lastname,
-    dob: item.student[0].dob,
-    grade: item.student[0].grade,
-    ecname: item.student[0].ecname,
-    ecphone: item.student[0].ecphone,
-    ecrelationship: item.student[0].ecrelationship,
-    StudentDismisall: item.student[0].StudentDismisall,
-  })) as Student[];
+  const students = (data || []).map((item) => {
+    const student = Array.isArray(item.student) && item.student.length > 0 
+      ? item.student[0] 
+      : item.student;
+    
+    return {
+      studentid: item.studentid,
+      firstname: (student as { firstname: string })?.firstname || '',
+      lastname: (student as { lastname: string })?.lastname || '',
+      dob: (student as { dob?: string })?.dob,
+      grade: (student as { grade?: string })?.grade,
+      ecname: (student as { ecname?: string })?.ecname,
+      ecphone: (student as { ecphone?: string })?.ecphone,
+      ecrelationship: (student as { ecrelationship?: string })?.ecrelationship,
+      StudentDismisall: (student as { StudentDismisall?: string })?.StudentDismisall,
+    };
+  }) as Student[];
 
   // Sort by lastname in JavaScript
   return students.sort((a, b) => a.lastname.localeCompare(b.lastname));
@@ -332,8 +344,14 @@ export async function getActiveRoster(teamId: string): Promise<Student[]> {
 export async function getAssistanceForOccurrence(
   occurrenceId: string
 ): Promise<Assistance[]> {
+  console.log("📋 getAssistanceForOccurrence called:", occurrenceId);
+  
   // Parse composite ID to get sessionid and occurrence_date
-  const [sessionId, occurrenceDate] = occurrenceId.split("_");
+  // Format is: sessionid_YYYY-MM-DD, where sessionid is a UUID
+  const lastUnderscoreIndex = occurrenceId.lastIndexOf("_");
+  const sessionId = occurrenceId.substring(0, lastUnderscoreIndex);
+  const occurrenceDate = occurrenceId.substring(lastUnderscoreIndex + 1);
+  console.log("📅 Querying assistance for:", { sessionId, occurrenceDate, originalId: occurrenceId });
 
   const { data, error } = await supabase
     .from("assistance")
@@ -342,8 +360,12 @@ export async function getAssistanceForOccurrence(
     .eq("date", occurrenceDate);
 
   if (error) {
+    console.error("❌ Error getting assistance:", error);
     throw new Error(`Error al obtener asistencia: ${error.message}`);
   }
+
+  console.log("📊 Assistance data retrieved:", data?.length || 0, "records");
+  console.log("📋 Assistance details:", data);
 
   return (data || []) as Assistance[];
 }
@@ -356,8 +378,14 @@ export async function setAssistance(
   studentId: string,
   assisted: boolean
 ): Promise<void> {
+  console.log("🔄 setAssistance called:", { occurrenceId, studentId, assisted });
+  
   // Parse composite ID to get sessionid and occurrence_date
-  const [sessionId, occurrenceDate] = occurrenceId.split("_");
+  // Format is: sessionid_YYYY-MM-DD, where sessionid is a UUID
+  const lastUnderscoreIndex = occurrenceId.lastIndexOf("_");
+  const sessionId = occurrenceId.substring(0, lastUnderscoreIndex);
+  const occurrenceDate = occurrenceId.substring(lastUnderscoreIndex + 1);
+  console.log("📅 Parsed IDs:", { sessionId, occurrenceDate, originalId: occurrenceId });
 
   // Check if assistance record already exists for this specific date
   const { data: existingAssistance, error: checkError } = await supabase
@@ -369,23 +397,30 @@ export async function setAssistance(
     .maybeSingle();
 
   if (checkError) {
+    console.error("❌ Error checking existing assistance:", checkError);
     throw new Error(
       `Error al verificar asistencia existente: ${checkError.message}`
     );
   }
 
+  console.log("🔍 Existing assistance:", existingAssistance);
+
   if (existingAssistance) {
     // Update existing record
+    console.log("🔄 Updating existing record...");
     const { error } = await supabase
       .from("assistance")
       .update({ assisted })
       .eq("id", existingAssistance.id);
 
     if (error) {
+      console.error("❌ Error updating assistance:", error);
       throw new Error(`Error al actualizar asistencia: ${error.message}`);
     }
+    console.log("✅ Assistance updated successfully");
   } else {
     // Create new record with the specific date
+    console.log("➕ Creating new record...");
     const { error } = await supabase.from("assistance").insert({
       sessionid: sessionId,
       studentid: studentId,
@@ -394,10 +429,12 @@ export async function setAssistance(
     });
 
     if (error) {
+      console.error("❌ Error creating assistance:", error);
       throw new Error(
         `Error al crear registro de asistencia: ${error.message}`
       );
     }
+    console.log("✅ Assistance created successfully");
   }
 }
 

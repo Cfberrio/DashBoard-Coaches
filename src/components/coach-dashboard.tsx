@@ -16,7 +16,6 @@ import {
   useOccurrenceAttendance,
   AttendanceStatusBadge,
 } from "@/features/coach/wiring";
-import { DebugDashboard, DebugAttendance } from "./debug-dashboard";
 
 
 
@@ -68,34 +67,86 @@ export function CoachDashboard() {
 
   // Obtener datos de asistencia si estamos en modo check-in
   const attendanceData = useOccurrenceAttendance(
-    attendanceMode ? selectedOccurrence : "",
-    selectedTeam
+    attendanceMode && selectedOccurrence ? selectedOccurrence : undefined,
+    attendanceMode && selectedTeam ? selectedTeam : undefined
   );
-  const presentCount =
-    attendanceData.students?.filter((s) => s.assistance?.assisted).length || 0;
-  const totalCount = attendanceData.students?.length || 0;
+
+  // Obtener datos de asistencia para mostrar contadores SIEMPRE (no solo en modo check-in)
+  const countersData = useOccurrenceAttendance(
+    selectedOccurrence || undefined,
+    selectedTeam || undefined
+  );
+  
+  // Calcular contadores que se actualizan automáticamente
+  const { presentCount, absentCount, totalCount, markedCount } = useMemo(() => {
+    // Usar countersData para los contadores (siempre disponible) y attendanceData para el check-in
+    const students = countersData.students || [];
+    const studentsWithAssistance = students.filter((s) => s.assistance !== undefined);
+    const present = students.filter((s) => s.assistance?.assisted === true).length;
+    const absent = students.filter((s) => s.assistance?.assisted === false).length;
+    
+    return {
+      presentCount: present,
+      absentCount: absent,
+      totalCount: students.length,
+      markedCount: studentsWithAssistance.length,
+    };
+  }, [countersData.students]);
 
   const toggleAttendance = async (studentId: string, assisted?: boolean) => {
-    if (!selectedOccurrence || !attendanceData.setAttendance) return;
+    console.log("🎯 toggleAttendance called:", { 
+      studentId, 
+      assisted, 
+      selectedOccurrence, 
+      hasSetAttendance: !!attendanceData.setAttendance 
+    });
+    
+    // Parse the occurrence ID to see the sessionid
+    if (selectedOccurrence) {
+      const lastUnderscoreIndex = selectedOccurrence.lastIndexOf("_");
+      const sessionId = selectedOccurrence.substring(0, lastUnderscoreIndex);
+      const occurrenceDate = selectedOccurrence.substring(lastUnderscoreIndex + 1);
+      console.log("🔍 Parsed occurrence ID:", {
+        originalId: selectedOccurrence,
+        sessionId,
+        occurrenceDate,
+        sessionIdLength: sessionId.length
+      });
+    }
+    
+    if (!selectedOccurrence) {
+      console.error("❌ No occurrence selected");
+      return;
+    }
+    
+    if (!attendanceData.setAttendance) {
+      console.error("❌ setAttendance function not available");
+      return;
+    }
 
     const student = attendanceData.students?.find(
       (s) => s.studentid === studentId
     );
-    if (!student) return;
+    if (!student) {
+      console.error("Student not found:", studentId);
+      return;
+    }
 
     // Si no se especifica nuevo estado, alternar entre presente/ausente
     const currentAssisted = student.assistance?.assisted || false;
     const newAssisted = assisted !== undefined ? assisted : !currentAssisted;
 
+    console.log("Updating attendance:", { studentId, currentAssisted, newAssisted });
+
     try {
       await attendanceData.setAttendance(studentId, newAssisted);
       console.log(
-        `Attendance updated for student ${studentId}: ${
+        `✅ Attendance updated for student ${studentId}: ${
           newAssisted ? "present" : "absent"
         }`
       );
     } catch (error) {
-      console.error("Error updating attendance:", error);
+      console.error("❌ Error updating attendance:", error);
     }
   };
 
@@ -165,15 +216,6 @@ export function CoachDashboard() {
         </p>
       </div>
 
-      {/* Debug Components - Remove in production */}
-      <div className="mb-6 space-y-4">
-        <DebugDashboard />
-        <DebugAttendance 
-          selectedTeam={selectedTeam}
-          selectedOccurrence={selectedOccurrence}
-          attendanceMode={attendanceMode}
-        />
-      </div>
 
       <Card className="mb-4 sm:mb-6">
         <CardHeader>
@@ -333,19 +375,27 @@ export function CoachDashboard() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
-            <div className="grid grid-cols-3 gap-2 text-xs sm:text-sm">
-              <div>
-                <span className="text-gray-600">Total:</span>
-                <span className="ml-1 font-medium">{totalCount}</span>
+            <div className="space-y-2">
+              <div className="grid grid-cols-3 gap-2 text-xs sm:text-sm">
+                <div>
+                  <span className="text-gray-600">Total:</span>
+                  <span className="ml-1 font-medium">{totalCount}</span>
+                </div>
+                <div>
+                  <span className="text-green-600">Present:</span>
+                  <span className="ml-1 font-medium">{presentCount}</span>
+                </div>
+                <div>
+                  <span className="text-red-600">Absent:</span>
+                  <span className="ml-1 font-medium">{absentCount}</span>
+                </div>
               </div>
-              <div>
-                <span className="text-green-600">Present:</span>
-                <span className="ml-1 font-medium">{presentCount}</span>
-              </div>
-              <div>
-                <span className="text-red-600">Absent:</span>
-                <span className="ml-1 font-medium">{totalCount - presentCount}</span>
-              </div>
+              {attendanceMode && (
+                <div className="text-xs text-gray-500 pt-1 border-t">
+                  <span>Marked: {markedCount} / {totalCount}</span>
+                  <span className="ml-2">Pending: {totalCount - markedCount}</span>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>

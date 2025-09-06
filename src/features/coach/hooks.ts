@@ -123,10 +123,27 @@ export function useSetAssistance() {
       assisted: boolean;
     }) => setAssistance(occurrenceId, studentId, assisted),
     onSuccess: (_, { occurrenceId }) => {
+      console.log("🔄 Invalidating queries after attendance update");
+      
       // Invalidate assistance query to refresh the list
       queryClient.invalidateQueries({
         queryKey: QUERY_KEYS.assistance(occurrenceId),
       });
+      
+      // Also invalidate all roster queries to ensure fresh data
+      queryClient.invalidateQueries({
+        queryKey: ["roster"],
+      });
+      
+      // Force refetch of assistance data
+      queryClient.refetchQueries({
+        queryKey: QUERY_KEYS.assistance(occurrenceId),
+      });
+      
+      console.log("✅ Queries invalidated and refetched");
+    },
+    onError: (error) => {
+      console.error("❌ Error in setAssistance mutation:", error);
     },
   });
 }

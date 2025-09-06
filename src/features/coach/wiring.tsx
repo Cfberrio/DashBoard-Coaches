@@ -47,7 +47,7 @@ export function useDashboard() {
 /**
  * Hook for occurrence assistance management
  */
-export function useOccurrenceAttendance(occurrenceId: string, teamId?: string) {
+export function useOccurrenceAttendance(occurrenceId?: string, teamId?: string) {
   // Get roster and assistance
   const rosterQuery = useRoster(teamId);
   const assistanceQuery = useAssistance(occurrenceId);
@@ -67,6 +67,11 @@ export function useOccurrenceAttendance(occurrenceId: string, teamId?: string) {
   }, [rosterQuery.data, assistanceQuery.data]);
 
   const setStudentAttendance = (studentId: string, assisted: boolean) => {
+    if (!occurrenceId) {
+      console.error("Cannot set attendance: no occurrence ID provided");
+      return;
+    }
+    
     setAssistanceMutation.mutate({
       occurrenceId,
       studentId,
