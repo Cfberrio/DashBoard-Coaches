@@ -17,14 +17,6 @@ import {
   AttendanceStatusBadge,
 } from "@/features/coach/wiring";
 
-interface Student {
-  studentid: string;
-  firstname: string;
-  lastname: string;
-  grade?: string;
-  assisted?: boolean;
-  assistanceId?: string;
-}
 
 
 export function CoachDashboard() {
@@ -213,7 +205,7 @@ export function CoachDashboard() {
 
             {filteredTeamsMemo.length === 0 && searchTerm && (
               <p className="text-xs sm:text-sm text-gray-500 text-center py-4">
-                No se encontraron equipos que coincidan con "{searchTerm}"
+                No se encontraron equipos que coincidan con &quot;{searchTerm}&quot;
               </p>
             )}
           </div>

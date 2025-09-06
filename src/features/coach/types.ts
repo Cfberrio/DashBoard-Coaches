@@ -97,3 +97,6 @@ export type SessionOccurrence = {
   location?: string | null;
   status: string; // 'scheduled', 'completed', etc.
 };
+
+// Attendance status types
+export type AttendanceStatus = 'present' | 'late' | 'excused' | 'absent';

@@ -93,7 +93,7 @@ export class SimpleSupabaseClient {
         });
         return { error: null };
       } catch (error) {
-        return { error: { message: error.message } };
+        return { error: { message: error instanceof Error ? error.message : String(error) } };
       }
     },
 
@@ -117,7 +117,7 @@ export class SimpleSupabaseClient {
         
         return { data: { user: data.user }, error: null };
       } catch (error) {
-        return { data: null, error: { message: error.message } };
+        return { data: null, error: { message: error instanceof Error ? error.message : String(error) } };
       }
     },
 
@@ -130,7 +130,7 @@ export class SimpleSupabaseClient {
         const data = await this.makeRequest('/auth/v1/user');
         return { data: { user: data }, error: null };
       } catch (error) {
-        return { data: { user: null }, error: { message: error.message } };
+        return { data: { user: null }, error: { message: error instanceof Error ? error.message : String(error) } };
       }
     },
 
@@ -153,7 +153,7 @@ export class SimpleSupabaseClient {
             lastToken = currentToken;
             this.authToken = currentToken;
             callback(currentToken ? 'SIGNED_IN' : 'SIGNED_OUT', 
-              currentToken ? { access_token: currentToken } : null);
+              currentToken ? { access_token: currentToken, user: { id: '', email: '', created_at: '' } } : null);
           }
         }
       };

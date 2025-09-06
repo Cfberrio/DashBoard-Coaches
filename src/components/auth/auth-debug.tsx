@@ -11,7 +11,7 @@ export function AuthDebug() {
   const [results, setResults] = useState<{
     step1_userExists: string | null;
     step2_staffExists: { success: boolean; error?: string; data?: unknown } | string | null;
-    step3_otpTest: { success: boolean; error?: string; message?: string; code?: number } | string | null;
+    step3_otpTest: { success: boolean; error?: string; message?: string; code?: number } | null;
     recommendations: string[];
   } | null>(null);
   const [loading, setLoading] = useState(false);
@@ -22,7 +22,12 @@ export function AuthDebug() {
     setLoading(true);
     setResults(null);
 
-    const testResults = {
+    const testResults: {
+      step1_userExists: string | null;
+      step2_staffExists: { success: boolean; error?: string; data?: unknown } | string | null;
+      step3_otpTest: { success: boolean; error?: string; message?: string; code?: number } | null;
+      recommendations: string[];
+    } = {
       step1_userExists: null,
       step2_staffExists: null,
       step3_otpTest: null,
