@@ -8,7 +8,12 @@ import { Input } from "@/components/ui/input";
 
 export function AuthDebug() {
   const [email, setEmail] = useState("");
-  const [results, setResults] = useState<any>(null);
+  const [results, setResults] = useState<{
+    step1_userExists: string | null;
+    step2_staffExists: { success: boolean; error?: string; data?: unknown } | string | null;
+    step3_otpTest: { success: boolean; error?: string; message?: string; code?: number } | string | null;
+    recommendations: string[];
+  } | null>(null);
   const [loading, setLoading] = useState(false);
 
   const testAuthFlow = async () => {
@@ -87,10 +92,10 @@ export function AuthDebug() {
           "✅ Todo parece estar configurado correctamente. El login debería funcionar."
         );
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       testResults.step3_otpTest = {
         success: false,
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
       };
     }
 

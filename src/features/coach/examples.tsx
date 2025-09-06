@@ -141,7 +141,7 @@ export function DashboardStats() {
       </div>
       
       <div className="bg-white p-4 rounded-lg shadow">
-        <h3 className="text-lg font-semibold text-gray-800">Today's Sessions</h3>
+        <h3 className="text-lg font-semibold text-gray-800">Today&apos;s Sessions</h3>
         <p className="text-2xl font-bold text-orange-600">{upcomingToday}</p>
       </div>
     </div>

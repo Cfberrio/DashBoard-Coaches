@@ -47,7 +47,7 @@ export class SimpleSupabaseClient {
   from(table: string) {
     return {
       select: (columns = '*') => ({
-        eq: (column: string, value: any) => ({
+        eq: (column: string, value: string | number | boolean) => ({
           single: async () => {
             const data = await this.makeRequest(
               `/rest/v1/${table}?select=${columns}&${column}=eq.${value}&limit=1`
@@ -61,7 +61,7 @@ export class SimpleSupabaseClient {
             return { data, error: null };
           }
         }),
-        in: (column: string, values: any[]) => ({
+        in: (column: string, values: (string | number | boolean)[]) => ({
           execute: async () => {
             const valueStr = values.map(v => `"${v}"`).join(',');
             const data = await this.makeRequest(
@@ -142,7 +142,7 @@ export class SimpleSupabaseClient {
       return { error: null };
     },
 
-    onAuthStateChange: (callback: (event: string, session: any) => void) => {
+    onAuthStateChange: (callback: (event: string, session: Session | null) => void) => {
       // Implementación básica que solo detecta cambios en localStorage
       let lastToken = this.authToken;
       

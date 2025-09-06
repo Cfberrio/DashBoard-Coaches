@@ -1,6 +1,5 @@
 import { supabase } from "@/lib/supabaseClient";
 import {
-  Team,
   Staff,
   SessionOccurrence,
   Student,
@@ -205,13 +204,13 @@ export async function getUpcomingOccurrencesForTeams(): Promise<
     }
 
     // Generar todas las ocurrencias semanales en el período
-    let currentDate = new Date(sessionStart);
+    const currentDate = new Date(sessionStart);
 
     // Buscar el primer día que coincida con el día de la semana dentro del rango
     while (currentDate <= sessionEnd) {
       if (currentDate.getDay() === sessionDayOfWeek) {
         // Encontramos el primer día que coincide, generar todas las ocurrencias desde aquí
-        let occurrenceDate = new Date(currentDate);
+        const occurrenceDate = new Date(currentDate);
 
         while (occurrenceDate <= sessionEnd) {
           // Solo incluir ocurrencias desde hoy hacia adelante (incluyendo hoy)

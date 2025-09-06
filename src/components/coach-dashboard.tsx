@@ -8,7 +8,6 @@ import { Input } from "@/components/ui/input";
 import {
   Users,
   CheckCircle,
-  Clock,
   Calendar,
   Search,
 } from "lucide-react";
@@ -27,25 +26,6 @@ interface Student {
   assistanceId?: string;
 }
 
-interface Team {
-  teamid: string;
-  name: string;
-  description: string;
-  participants?: number;
-  students: Student[];
-  school?: {
-    name: string;
-    location: string;
-  };
-}
-
-interface SessionOccurrence {
-  id: string;
-  starts_at: string;
-  ends_at: string;
-  location?: string;
-  status: string;
-}
 
 export function CoachDashboard() {
   const [selectedTeam, setSelectedTeam] = useState<string>("");
