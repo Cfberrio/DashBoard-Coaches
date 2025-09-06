@@ -57,7 +57,7 @@ export function OTPLogin() {
         ...prev,
         loading: false,
         step: "otp",
-        message: `Código OTP enviado a ${state.email}. Revisa tu bandeja de entrada.`,
+        message: `OTP code sent to ${state.email}. Check your inbox.`,
         error: null,
       }));
     } catch (error: any) {
@@ -107,7 +107,7 @@ export function OTPLogin() {
           window.location.reload();
         }, 1500);
       }
-    } catch (error) {
+    } catch (error:any) {
       setState((prev) => ({
         ...prev,
         loading: false,
@@ -155,7 +155,7 @@ export function OTPLogin() {
                 <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
                   type="email"
-                  placeholder="coach@ejemplo.com"
+                  placeholder="coach@example.com"
                   value={state.email}
                   onChange={(e) =>
                     setState((prev) => ({
@@ -257,7 +257,7 @@ export function OTPLogin() {
           )}
 
           <div className="text-center text-xs text-gray-500 mt-6">
-            Solo coaches registrados pueden acceder al sistema
+            Only registered coaches can access the system
           </div>
         </CardContent>
       </Card>

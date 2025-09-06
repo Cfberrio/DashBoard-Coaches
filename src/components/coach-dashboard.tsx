@@ -11,7 +11,6 @@ import {
   Clock,
   Calendar,
   Search,
-  History,
 } from "lucide-react";
 import {
   useDashboard,
@@ -55,7 +54,6 @@ export function CoachDashboard() {
   const [mounted, setMounted] = useState(false);
 
   const [selectedOccurrence, setSelectedOccurrence] = useState<string>("");
-  const [showHistory, setShowHistory] = useState(false);
 
   // Evitar problemas de hidratación
   useEffect(() => {
@@ -153,7 +151,7 @@ export function CoachDashboard() {
       <div className="min-h-screen bg-gray-50 p-2 sm:p-4 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
-          <p className="text-sm sm:text-base">Cargando dashboard...</p>
+          <p className="text-sm sm:text-base">Loading dashboard...</p>
         </div>
       </div>
     );
@@ -351,7 +349,7 @@ export function CoachDashboard() {
         </Card>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 lg:gap-6 mb-4 sm:mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 lg:gap-6 mb-4 sm:mb-6">
         <Card>
           <CardHeader className="pb-2 sm:pb-3">
             <CardTitle className="text-base sm:text-lg">
@@ -365,7 +363,7 @@ export function CoachDashboard() {
                 <span className="ml-1 font-medium">{totalCount}</span>
               </div>
               <div>
-                <span className="text-green-600">Presentes:</span>
+                <span className="text-green-600">Present:</span>
                 <span className="ml-1 font-medium">{presentCount}</span>
               </div>
             </div>
@@ -388,54 +386,11 @@ export function CoachDashboard() {
             >
               {attendanceMode ? "Finish" : "Start Check-in"}
             </Button>
-            <Button
-              variant="outline"
-              className="w-full bg-transparent h-10 sm:h-9 text-sm sm:text-base"
-              onClick={() => setShowHistory(!showHistory)}
-            >
-              <History className="h-4 w-4 mr-2" />
-              {showHistory ? "Hide" : "View"} History
-            </Button>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="pb-2 sm:pb-3">
-            <CardTitle className="text-base sm:text-lg flex items-center gap-2">
-              <Clock className="h-4 w-4" />
-              Resumen
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-1 text-xs sm:text-sm">
-              <p>
-                Hoy: {presentCount}/{totalCount}
-              </p>
-              <p className="text-gray-600">Ayer: 4/5</p>
-              <p className="text-gray-600">Lunes: 5/5</p>
-            </div>
-          </CardContent>
-        </Card>
       </div>
 
-      {showHistory && (
-        <Card className="mt-4 sm:mt-6">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-              <History className="h-4 w-4 sm:h-5 sm:w-5" />
-              Historial de Asistencia
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2 sm:space-y-3 max-h-80 sm:max-h-96 overflow-y-auto">
-              <p className="text-gray-500 text-center py-4 text-sm sm:text-base">
-                El historial de asistencia se implementará en una próxima
-                versión
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      )}
 
       {attendanceMode && currentTeam && attendanceData.students && (
         <Card className="mt-4 sm:mt-6">
@@ -513,7 +468,7 @@ export function CoachDashboard() {
                             disabled={attendanceData.isSettingAttendance}
                             className="h-8 text-xs px-2"
                           >
-                            Presente
+                            Present
                           </Button>
                           <Button
                             size="sm"
@@ -528,7 +483,7 @@ export function CoachDashboard() {
                             disabled={attendanceData.isSettingAttendance}
                             className="h-8 text-xs px-2"
                           >
-                            Ausente
+                            Absent
                           </Button>
                         </div>
                       </div>

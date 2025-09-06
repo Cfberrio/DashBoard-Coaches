@@ -21,11 +21,11 @@ export async function getCurrentStaff(): Promise<Staff> {
     throw new Error("No hay usuario autenticado");
   }
 
-  // Buscar staff por userid (email)
+  // Buscar staff por id (usando el id del usuario autenticado)
   const { data, error } = await supabase
     .from("staff")
     .select("*")
-    .eq("userid", user.id)
+    .eq("id", user.id)
     .single();
 
   if (error) {
@@ -58,7 +58,7 @@ export async function getMyTeams(): Promise<TeamWithSchool[]> {
   const { data: staffData, error: staffError } = await supabase
     .from("staff")
     .select("id")
-    .eq("userid", user.id)
+    .eq("id", user.id)
     .single();
 
   if (staffError || !staffData) {

@@ -23,7 +23,7 @@ Para verificar que las variables están configuradas correctamente, abre la cons
 Si aún no aparecen los datos, verifica:
 
 1. **Autenticación**: ¿Está el usuario logueado en Supabase?
-2. **Tabla staff**: ¿Existe un registro en `public.staff` con `userid` que coincida con el usuario autenticado?
+2. **Tabla staff**: ¿Existe un registro en `public.staff` con `id` que coincida con el usuario autenticado?
 3. **Tabla staff_team**: ¿Hay registros activos que conecten al staff con equipos?
 4. **Permisos RLS**: ¿Están deshabilitadas las políticas RLS como se especificó?
 

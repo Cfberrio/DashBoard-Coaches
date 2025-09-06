@@ -49,7 +49,7 @@ export function AuthDebug() {
 
       const { data: staffData, error: staffError } = await supabase
         .from("staff")
-        .select("id, name, email, userid")
+        .select("id, name, email")
         .ilike("email", email.trim())
         .single();
 
@@ -76,13 +76,13 @@ export function AuthDebug() {
         );
       }
 
-      if (staffData && !staffData.userid) {
+      if (staffData && !staffData.id) {
         testResults.recommendations.push(
-          "El staff existe pero no tiene userid asignado. Necesitas actualizar staff.userid con el ID del usuario de auth.users."
+          "El staff existe pero no tiene id válido. Verifica que el registro de staff esté correctamente configurado."
         );
       }
 
-      if (!otpError && staffData && staffData.userid) {
+      if (!otpError && staffData && staffData.id) {
         testResults.recommendations.push(
           "✅ Todo parece estar configurado correctamente. El login debería funcionar."
         );
@@ -154,7 +154,7 @@ export function AuthDebug() {
           </p>
           <ol className="list-decimal list-inside space-y-1">
             <li>Crear usuario en Supabase Auth si no existe</li>
-            <li>Asegurar que staff.userid = auth.user.id</li>
+            <li>Asegurar que staff.id = auth.user.id</li>
             <li>Verificar que el email coincida en ambas tablas</li>
           </ol>
         </div>

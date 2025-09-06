@@ -13,7 +13,6 @@ export type Team = {
 
 export type Staff = {
   id: string;
-  userid: string | null;
   name: string;
   email: string;
   phone?: string | null;

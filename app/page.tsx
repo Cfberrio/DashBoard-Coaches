@@ -45,7 +45,7 @@ export default function Home() {
               onClick={signOut}
               className="text-sm text-gray-600 hover:text-gray-900"
             >
-              Cerrar Sesión
+              Sign Out
             </button>
           </div>
         </div>

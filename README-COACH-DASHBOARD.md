@@ -7,7 +7,7 @@ Esta implementación conecta el Coach Dashboard con Supabase y proporciona una c
 ### 🔐 Autenticación y Autorización
 
 - Autenticación con Supabase Auth
-- Mapeo de usuarios a tabla `staff` via `userid`
+- Mapeo de usuarios a tabla `staff` via `id`
 - Filtrado automático por permisos de coach
 
 ### 📊 Dashboard Principal
@@ -74,7 +74,7 @@ npm install @supabase/supabase-js @tanstack/react-query
 
 Las siguientes tablas deben existir en tu base de datos según el nuevo esquema:
 
-- `public.staff` - Personal/coaches con campos: id, userid, name, email, phone
+- `public.staff` - Personal/coaches con campos: id, name, email, phone
 - `public.team` - Equipos con campos: teamid, schoolid, description, price, participants, isactive, created_at, updated_at, name, logo
 - `public.school` - Escuelas con campos: schoolid, name, location
 - `public.student` - Estudiantes con campos: studentid, parentid, firstname, lastname, dob, grade, ecname, ecphone, ecrelationship, StudentDismisall
@@ -168,7 +168,7 @@ function App() {
 ### 1. Login y Autenticación
 
 - El usuario se autentica con Supabase Auth
-- Se busca su registro en la tabla `staff` usando `userid`
+- Se busca su registro en la tabla `staff` usando `id`
 
 ### 2. Búsqueda de Equipos
 
@@ -251,7 +251,7 @@ Todo el sistema usa la zona horaria de Miami (`America/New_York`) para:
 ### Error: "Staff row not found"
 
 - Verificar que el usuario autenticado tenga un registro en `public.staff`
-- Verificar que `staff.userid` coincida con `auth.users.id`
+- Verificar que `staff.id` coincida con `auth.users.id`
 
 ### Error: "No teams found"
 
