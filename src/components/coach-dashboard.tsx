@@ -68,7 +68,7 @@ export function CoachDashboard() {
   // Obtener datos de asistencia si estamos en modo check-in
   const attendanceData = useOccurrenceAttendance(
     attendanceMode ? selectedOccurrence : "",
-    currentOccurrence?.teamid
+    selectedTeam
   );
   const presentCount =
     attendanceData.students?.filter((s) => s.assistance?.assisted).length || 0;
