@@ -79,11 +79,8 @@ export function CoachDashboard() {
   const filteredTeamsMemo = useMemo(() => {
     if (!stableTeams.length) return [];
 
-    return stableTeams.filter(
-      (team) =>
-        team.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (team.description &&
-          team.description.toLowerCase().includes(searchTerm.toLowerCase()))
+    return stableTeams.filter((team) =>
+      team.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [searchTerm, stableTeams]);
 
@@ -225,12 +222,8 @@ export function CoachDashboard() {
                   <span className="font-medium text-sm sm:text-base">
                     {team.name}
                   </span>
-                  <span className="text-xs opacity-70">Active team</span>
-                  <span className="text-xs opacity-60 line-clamp-2">
-                    {team.description || "No description"}
-                  </span>
                   {team.school && (
-                    <span className="text-xs opacity-50">
+                    <span className="text-xs opacity-70">
                       {team.school.location}
                     </span>
                   )}
@@ -357,7 +350,7 @@ export function CoachDashboard() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
-            <div className="grid grid-cols-2 gap-2 text-xs sm:text-sm">
+            <div className="grid grid-cols-3 gap-2 text-xs sm:text-sm">
               <div>
                 <span className="text-gray-600">Total:</span>
                 <span className="ml-1 font-medium">{totalCount}</span>
@@ -365,6 +358,10 @@ export function CoachDashboard() {
               <div>
                 <span className="text-green-600">Present:</span>
                 <span className="ml-1 font-medium">{presentCount}</span>
+              </div>
+              <div>
+                <span className="text-red-600">Absent:</span>
+                <span className="ml-1 font-medium">{totalCount - presentCount}</span>
               </div>
             </div>
           </CardContent>
@@ -451,7 +448,7 @@ export function CoachDashboard() {
                           />
                         ) : (
                           <Badge variant="secondary" className="text-xs">
-                            Sin marcar
+                            Not marked
                           </Badge>
                         )}
                         <div className="flex gap-1">

@@ -48,7 +48,7 @@ export function OTPLogin() {
         setState((prev) => ({
           ...prev,
           loading: false,
-          error: `Error al enviar código: ${error.message}`,
+          error: `Error sending code: ${error.message}`,
         }));
         return;
       }
@@ -64,7 +64,7 @@ export function OTPLogin() {
       setState((prev) => ({
         ...prev,
         loading: false,
-        error: `Error inesperado: ${error.message}`,
+        error: `Unexpected error: ${error.message}`,
       }));
     }
   };
@@ -88,7 +88,7 @@ export function OTPLogin() {
         setState((prev) => ({
           ...prev,
           loading: false,
-          error: `Código inválido: ${error.message}`,
+          error: `Invalid code: ${error.message}`,
         }));
         return;
       }
@@ -98,11 +98,11 @@ export function OTPLogin() {
           ...prev,
           loading: false,
           step: "success",
-          message: `¡Bienvenido!`,
+          message: `Welcome!`,
           error: null,
         }));
 
-        // Recargar la página para actualizar el estado de autenticación
+        // Reload the page to update authentication state
         setTimeout(() => {
           window.location.reload();
         }, 1500);
@@ -111,7 +111,7 @@ export function OTPLogin() {
       setState((prev) => ({
         ...prev,
         loading: false,
-        error: `Error inesperado: ${error.message}`,
+        error: `Unexpected error: ${error.message}`,
       }));
     }
   };
@@ -206,7 +206,7 @@ export function OTPLogin() {
                   className="w-full"
                   disabled={state.loading}
                 >
-                  {state.loading ? "Verificando..." : "Verificar Código"}
+                  {state.loading ? "Verifying..." : "Verify Code"}
                 </Button>
                 <Button
                   onClick={resetForm}
@@ -214,7 +214,7 @@ export function OTPLogin() {
                   className="w-full"
                   disabled={state.loading}
                 >
-                  Cambiar Email
+                  Change Email
                 </Button>
               </div>
             </div>
@@ -238,7 +238,7 @@ export function OTPLogin() {
                 </svg>
               </div>
               <p className="text-green-600 font-medium">
-                Redirigiendo al dashboard...
+                Redirecting to dashboard...
               </p>
             </div>
           )}

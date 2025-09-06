@@ -114,7 +114,7 @@ export function AttendanceStatusBadge({ assisted }: { assisted: boolean }) {
   };
 
   const getStatusText = (assisted: boolean) => {
-    return assisted ? "Presente" : "Ausente";
+    return assisted ? "Present" : "Absent";
   };
 
   return (
