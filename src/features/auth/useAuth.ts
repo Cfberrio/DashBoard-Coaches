@@ -33,7 +33,7 @@ export function useAuth() {
             isAuthenticated: !!session?.user,
           });
         }
-      } catch (error) {
+      } catch {
         if (mounted) {
           setAuthState({
             user: null,
@@ -71,7 +71,7 @@ export function useAuth() {
   const signOut = async () => {
     try {
       await supabase.auth.signOut();
-    } catch (error) {
+    } catch {
       // Silently handle sign out errors
     }
   };

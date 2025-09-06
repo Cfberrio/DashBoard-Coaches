@@ -6,7 +6,13 @@ const nextConfig: NextConfig = {
   },
   // Configuración para mejorar la hidratación
   reactStrictMode: true,
-  swcMinify: true,
+  // Excluir archivos de Supabase functions del build
+  typescript: {
+    ignoreBuildErrors: false,
+  },
+  eslint: {
+    ignoreDuringBuilds: false,
+  },
   // Configuración para evitar problemas de hidratación
   compiler: {
     // Remover console.log en producción
