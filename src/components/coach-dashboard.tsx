@@ -16,6 +16,7 @@ import {
   useOccurrenceAttendance,
   AttendanceStatusBadge,
 } from "@/features/coach/wiring";
+import { DebugDashboard, DebugAttendance } from "./debug-dashboard";
 
 
 
@@ -162,6 +163,16 @@ export function CoachDashboard() {
         <p className="text-sm sm:text-base text-gray-600">
           Welcome, {staff.name} • {teams?.length || 0} assigned teams
         </p>
+      </div>
+
+      {/* Debug Components - Remove in production */}
+      <div className="mb-6 space-y-4">
+        <DebugDashboard />
+        <DebugAttendance 
+          selectedTeam={selectedTeam}
+          selectedOccurrence={selectedOccurrence}
+          attendanceMode={attendanceMode}
+        />
       </div>
 
       <Card className="mb-4 sm:mb-6">
