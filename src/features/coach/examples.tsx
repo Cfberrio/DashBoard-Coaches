@@ -9,7 +9,7 @@ import { AttendanceStatus } from './types';
  * Example: Main dashboard component connected to data
  */
 export function ConnectedCoachDashboard() {
-  const { isLoading, error } = useDashboard();
+  const { staff, teams, occurrences, isLoading, error } = useDashboard();
 
   if (isLoading) {
     return (
@@ -31,7 +31,13 @@ export function ConnectedCoachDashboard() {
   }
 
   // Pass data to the existing CoachDashboard component
-  return <CoachDashboard />;
+  return (
+    <CoachDashboard 
+      staff={staff}
+      teams={teams}
+      occurrences={occurrences}
+    />
+  );
 }
 
 /**
@@ -52,10 +58,8 @@ export function AttendanceManager({ occurrenceId, teamId }: { occurrenceId: stri
     );
   }
 
-  const handleStatusChange = (studentId: string, status: AttendanceStatus) => {
-    // Convert AttendanceStatus to boolean for setAttendance
-    const assisted = status === 'present' || status === 'late';
-    setAttendance(studentId, assisted);
+  const handleStatusChange = (studentId: string, status: AttendanceStatus, note?: string) => {
+    setAttendance(studentId, status, note);
   };
 
   return (
@@ -69,14 +73,14 @@ export function AttendanceManager({ occurrenceId, teamId }: { occurrenceId: stri
               <span className="font-medium">
                 {student.firstname} {student.lastname}
               </span>
-              {student.assistance && (
-                <p className="text-sm text-gray-600 mt-1">Assistance recorded</p>
+              {student.attendance?.note && (
+                <p className="text-sm text-gray-600 mt-1">{student.attendance.note}</p>
               )}
             </div>
             
             <div className="flex items-center gap-2">
-              {student.assistance ? (
-                <AttendanceStatusBadge assisted={student.assistance.assisted} />
+              {student.attendance ? (
+                <AttendanceStatusBadge status={student.attendance.status} />
               ) : (
                 <span className="text-gray-400">—</span>
               )}
@@ -88,8 +92,7 @@ export function AttendanceManager({ occurrenceId, teamId }: { occurrenceId: stri
                     onClick={() => handleStatusChange(student.studentid, status)}
                     disabled={isSettingAttendance}
                     className={`px-2 py-1 rounded text-xs ${
-                      (student.assistance?.assisted && (status === 'present' || status === 'late')) ||
-                      (!student.assistance?.assisted && (status === 'absent' || status === 'excused'))
+                      student.attendance?.status === status
                         ? 'bg-blue-600 text-white'
                         : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                     } disabled:opacity-50`}
@@ -138,7 +141,7 @@ export function DashboardStats() {
       </div>
       
       <div className="bg-white p-4 rounded-lg shadow">
-        <h3 className="text-lg font-semibold text-gray-800">Today&apos;s Sessions</h3>
+        <h3 className="text-lg font-semibold text-gray-800">Today's Sessions</h3>
         <p className="text-2xl font-bold text-orange-600">{upcomingToday}</p>
       </div>
     </div>

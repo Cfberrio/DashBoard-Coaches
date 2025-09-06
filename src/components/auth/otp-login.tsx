@@ -60,11 +60,11 @@ export function OTPLogin() {
         message: `OTP code sent to ${state.email}. Check your inbox.`,
         error: null,
       }));
-    } catch (error: unknown) {
+    } catch (error: any) {
       setState((prev) => ({
         ...prev,
         loading: false,
-        error: `Unexpected error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        error: `Unexpected error: ${error.message}`,
       }));
     }
   };
@@ -107,11 +107,11 @@ export function OTPLogin() {
           window.location.reload();
         }, 1500);
       }
-    } catch (error: unknown) {
+    } catch (error:any) {
       setState((prev) => ({
         ...prev,
         loading: false,
-        error: `Unexpected error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        error: `Unexpected error: ${error.message}`,
       }));
     }
   };

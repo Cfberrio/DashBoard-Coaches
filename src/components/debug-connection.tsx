@@ -7,10 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 export function DebugConnection() {
   const [status, setStatus] = useState<string>("Conectando...");
   const [error, setError] = useState<string | null>(null);
-  const [viewsData, setViewsData] = useState<{
-    teams: { data: unknown; error: unknown };
-    occurrences: { data: unknown; error: unknown };
-  } | null>(null);
+  const [viewsData, setViewsData] = useState<any>(null);
 
   useEffect(() => {
     testConnection();
@@ -20,7 +17,7 @@ export function DebugConnection() {
     try {
       // Test 1: Basic connection
       setStatus("Probando conexión básica...");
-      const { error: healthError } = await supabase
+      const { data: healthCheck, error: healthError } = await supabase
         .from("staff")
         .select("count")
         .limit(1);
@@ -56,8 +53,8 @@ export function DebugConnection() {
       } else {
         setStatus("🔓 No autenticado (esto es normal antes del login)");
       }
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Unknown error');
+    } catch (err: any) {
+      setError(err.message);
       setStatus("❌ Error de conexión");
     }
   };

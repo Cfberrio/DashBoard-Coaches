@@ -1,5 +1,6 @@
 import { supabase } from "@/lib/supabaseClient";
 import {
+  Team,
   Staff,
   SessionOccurrence,
   Student,
@@ -94,9 +95,7 @@ export async function getMyTeams(): Promise<TeamWithSchool[]> {
       isactive, 
       participants, 
       price,
-      schoolid,
       school:schoolid (
-        schoolid,
         name,
         location
       )
@@ -119,11 +118,11 @@ export async function getMyTeams(): Promise<TeamWithSchool[]> {
     participants: item.participants,
     price: item.price,
     schoolid: item.schoolid,
-    school: item.school && item.school.length > 0
+    school: item.school
       ? {
-          schoolid: item.school[0].schoolid,
-          name: item.school[0].name,
-          location: item.school[0].location,
+          schoolid: item.school.schoolid,
+          name: item.school.name,
+          location: item.school.location,
         }
       : undefined,
   })) as TeamWithSchool[];
@@ -206,13 +205,13 @@ export async function getUpcomingOccurrencesForTeams(): Promise<
     }
 
     // Generar todas las ocurrencias semanales en el período
-    const currentDate = new Date(sessionStart);
+    let currentDate = new Date(sessionStart);
 
     // Buscar el primer día que coincida con el día de la semana dentro del rango
     while (currentDate <= sessionEnd) {
       if (currentDate.getDay() === sessionDayOfWeek) {
         // Encontramos el primer día que coincide, generar todas las ocurrencias desde aquí
-        const occurrenceDate = new Date(currentDate);
+        let occurrenceDate = new Date(currentDate);
 
         while (occurrenceDate <= sessionEnd) {
           // Solo incluir ocurrencias desde hoy hacia adelante (incluyendo hoy)
@@ -312,14 +311,14 @@ export async function getActiveRoster(teamId: string): Promise<Student[]> {
   // Transform to Student format and sort by lastname
   const students = (data || []).map((item) => ({
     studentid: item.studentid,
-    firstname: item.student[0].firstname,
-    lastname: item.student[0].lastname,
-    dob: item.student[0].dob,
-    grade: item.student[0].grade,
-    ecname: item.student[0].ecname,
-    ecphone: item.student[0].ecphone,
-    ecrelationship: item.student[0].ecrelationship,
-    StudentDismisall: item.student[0].StudentDismisall,
+    firstname: item.student.firstname,
+    lastname: item.student.lastname,
+    dob: item.student.dob,
+    grade: item.student.grade,
+    ecname: item.student.ecname,
+    ecphone: item.student.ecphone,
+    ecrelationship: item.student.ecrelationship,
+    StudentDismisall: item.student.StudentDismisall,
   })) as Student[];
 
   // Sort by lastname in JavaScript
@@ -413,7 +412,6 @@ export async function getTeamById(
       `
       *,
       school:schoolid (
-        schoolid,
         name,
         location
       )

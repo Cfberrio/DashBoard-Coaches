@@ -22,6 +22,18 @@ export function AttendanceTracker() {
     { id: 7, name: "Miguel Torres", team: "Infantil B", status: "late", time: "17:20" },
   ]
 
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case "present":
+        return <CheckCircle className="h-4 w-4 text-green-600" />
+      case "late":
+        return <Clock className="h-4 w-4 text-yellow-600" />
+      case "absent":
+        return <XCircle className="h-4 w-4 text-red-600" />
+      default:
+        return null
+    }
+  }
 
   const getStatusBadge = (status: string) => {
     switch (status) {

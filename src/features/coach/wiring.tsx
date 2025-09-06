@@ -1,14 +1,16 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   useDashboardData,
   useRoster,
   useAssistance,
   useSetAssistance,
+  useTeam,
+  useUpcomingOccurrences,
 } from "./hooks";
-import { StudentWithAssistance } from "./types";
+import { SessionOccurrence, StudentWithAssistance } from "./types";
 
 // Create a query client
 const queryClient = new QueryClient({

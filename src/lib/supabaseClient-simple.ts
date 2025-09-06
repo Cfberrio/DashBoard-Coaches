@@ -47,7 +47,7 @@ export class SimpleSupabaseClient {
   from(table: string) {
     return {
       select: (columns = '*') => ({
-        eq: (column: string, value: string | number | boolean) => ({
+        eq: (column: string, value: any) => ({
           single: async () => {
             const data = await this.makeRequest(
               `/rest/v1/${table}?select=${columns}&${column}=eq.${value}&limit=1`
@@ -61,7 +61,7 @@ export class SimpleSupabaseClient {
             return { data, error: null };
           }
         }),
-        in: (column: string, values: (string | number | boolean)[]) => ({
+        in: (column: string, values: any[]) => ({
           execute: async () => {
             const valueStr = values.map(v => `"${v}"`).join(',');
             const data = await this.makeRequest(
@@ -93,7 +93,7 @@ export class SimpleSupabaseClient {
         });
         return { error: null };
       } catch (error) {
-        return { error: { message: error instanceof Error ? error.message : 'Unknown error' } };
+        return { error: { message: error.message } };
       }
     },
 
@@ -117,7 +117,7 @@ export class SimpleSupabaseClient {
         
         return { data: { user: data.user }, error: null };
       } catch (error) {
-        return { data: null, error: { message: error instanceof Error ? error.message : 'Unknown error' } };
+        return { data: null, error: { message: error.message } };
       }
     },
 
@@ -130,7 +130,7 @@ export class SimpleSupabaseClient {
         const data = await this.makeRequest('/auth/v1/user');
         return { data: { user: data }, error: null };
       } catch (error) {
-        return { data: { user: null }, error: { message: error instanceof Error ? error.message : 'Unknown error' } };
+        return { data: { user: null }, error: { message: error.message } };
       }
     },
 
@@ -142,7 +142,7 @@ export class SimpleSupabaseClient {
       return { error: null };
     },
 
-    onAuthStateChange: (callback: (event: string, session: { access_token: string } | null) => void) => {
+    onAuthStateChange: (callback: (event: string, session: any) => void) => {
       // Implementación básica que solo detecta cambios en localStorage
       let lastToken = this.authToken;
       
