@@ -164,7 +164,7 @@ export async function getUpcomingOccurrencesForTeams(): Promise<
   const today = new Date();
   const occurrences: SessionOccurrence[] = [];
 
-  // Mapeo de días de la semana a números (0 = Domingo)
+  // Mapeo de días de la semana a números (0 = Sunday)
   const dayMap: { [key: string]: number } = {
     domingo: 0,
     lunes: 1,

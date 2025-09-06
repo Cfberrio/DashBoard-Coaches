@@ -252,7 +252,7 @@ export function CoachDashboard() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
               <Calendar className="h-4 w-4 sm:h-5 sm:w-5" />
-              Seleccionar Sesión - {currentTeam.name}
+              Select Session - {currentTeam.name}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -263,7 +263,7 @@ export function CoachDashboard() {
             ) : (
               <div className="space-y-2">
                 <p className="text-sm text-gray-600 mb-3">
-                  Selecciona la sesión para la cual deseas tomar asistencia:
+                  Select the session for which you want to take attendance:
                 </p>
                 <div className="grid grid-cols-1 gap-2 max-h-60 overflow-y-auto">
                   {teamOccurrences.map((occurrence) => (
@@ -279,7 +279,7 @@ export function CoachDashboard() {
                     >
                       <div className="font-medium text-sm">
                         {new Date(occurrence.starts_at).toLocaleDateString(
-                          "es-ES",
+                          "en-US",
                           {
                             weekday: "long",
                             year: "numeric",
@@ -314,7 +314,7 @@ export function CoachDashboard() {
               <div className="flex items-center gap-2">
                 <Calendar className="h-4 w-4" />
                 <span className="font-medium text-sm sm:text-base">
-                  Sesión Seleccionada
+                  Selected Session
                 </span>
                 <Badge variant="outline" className="text-xs">
                   {currentOccurrence.status}
@@ -323,7 +323,7 @@ export function CoachDashboard() {
               <div className="text-xs sm:text-sm text-gray-600">
                 <div className="font-medium">
                   {new Date(currentOccurrence.starts_at).toLocaleDateString(
-                    "es-ES",
+                    "en-US",
                     {
                       weekday: "long",
                       year: "numeric",
@@ -398,13 +398,13 @@ export function CoachDashboard() {
             <CardTitle className="flex flex-col sm:flex-row sm:items-center gap-2 text-base sm:text-lg">
               <div className="flex items-center gap-2">
                 <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5" />
-                Lista de Asistencia - {currentTeam.name}
+                Attendance List - {currentTeam.name}
               </div>
               <Badge
                 variant="outline"
                 className="text-xs self-start sm:self-center"
               >
-                {new Date().toLocaleDateString("es-ES", {
+                {new Date().toLocaleDateString("en-US", {
                   weekday: "short",
                   month: "short",
                   day: "numeric",
@@ -440,7 +440,7 @@ export function CoachDashboard() {
                         </span>
                         {student.grade && (
                           <p className="text-xs sm:text-sm text-gray-500 mt-1">
-                            Grado: {student.grade}
+                            Grade: {student.grade}
                           </p>
                         )}
                       </div>
@@ -492,15 +492,15 @@ export function CoachDashboard() {
                 </div>
                 <div className="mt-4 p-3 bg-blue-50 rounded-lg">
                   <p className="text-xs sm:text-sm font-medium">
-                    <strong>Resumen de la sesión:</strong> {presentCount} de{" "}
-                    {totalCount} estudiantes presentes
+                    <strong>Session Summary:</strong> {presentCount} of{" "}
+                    {totalCount} students present
                   </p>
                   <p className="text-xs text-gray-600 mt-1">
-                    Los cambios se guardan automáticamente en el sistema
+                    Changes are saved automatically in the system
                   </p>
                   {attendanceData.isSettingAttendance && (
                     <p className="text-xs text-blue-600 mt-1">
-                      Guardando cambios...
+                      Saving changes...
                     </p>
                   )}
                 </div>
