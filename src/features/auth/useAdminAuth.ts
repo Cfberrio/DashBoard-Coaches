@@ -35,7 +35,7 @@ export function useAdminAuth() {
             const adminEmails = [
               "admin@disciplinerift.com"
             ];
-            isAdmin = adminEmails.includes(session.user.email);
+            isAdmin = session.user.email ? adminEmails.includes(session.user.email) : false;
           }
 
           setAuthState({
@@ -74,7 +74,7 @@ export function useAdminAuth() {
           const adminEmails = [
             "admin@disciplinerift.com"
           ];
-          isAdmin = adminEmails.includes(session.user.email);
+          isAdmin = session.user.email ? adminEmails.includes(session.user.email) : false;
         }
 
         setAuthState({
@@ -111,7 +111,7 @@ export function useAdminAuth() {
           "admin@disciplinerift.com"
         ];
 
-        const isAdminEmail = adminEmails.includes(data.user.email);
+        const isAdminEmail = data.user.email ? adminEmails.includes(data.user.email) : false;
 
         if (!isAdminEmail) {
           await supabase.auth.signOut();

@@ -15,6 +15,25 @@ interface ExtendedAttendance extends Assistance {
   student?: Student;
 }
 
+interface RawTeamWithSchool {
+  teamid: string;
+  name: string;
+  description?: string | null;
+  isactive: boolean;
+  participants?: number;
+  price?: number;
+  schoolid?: number;
+  school: {
+    schoolid: number;
+    name: string;
+    location?: string;
+  }[];
+}
+
+interface EnrollmentWithStudent {
+  student: Student[] | null;
+}
+
 /**
  * Get all teams with school information (admin view)
  */
@@ -44,7 +63,16 @@ export async function getAllTeams(): Promise<TeamWithSchool[]> {
     throw new Error(`Error al obtener equipos: ${error.message}`);
   }
 
-  return data as TeamWithSchool[];
+  // Convert raw data to proper format
+  const teams: TeamWithSchool[] = (data as RawTeamWithSchool[]).map(team => ({
+    ...team,
+    school: team.school?.[0] ? {
+      name: team.school[0].name,
+      location: team.school[0].location || ''
+    } : undefined
+  }));
+
+  return teams;
 }
 
 /**
@@ -85,18 +113,33 @@ export async function getSessionsByTeam(teamId: string): Promise<Session[]> {
  */
 export async function getStudentsByTeam(teamId: string): Promise<Student[]> {
   const { data, error } = await supabase
-    .from("student")
-    .select("*")
-    .inner("enrollment", "enrollment.studentid", "student.studentid")
-    .eq("enrollment.teamid", teamId)
-    .eq("enrollment.isactive", true)
-    .order("lastname");
+    .from("enrollment")
+    .select(`
+      student:studentid (
+        studentid,
+        firstname,
+        lastname,
+        dob,
+        grade,
+        ecname,
+        ecphone,
+        ecrelationship,
+        StudentDismisall
+      )
+    `)
+    .eq("teamid", teamId)
+    .eq("isactive", true);
 
   if (error) {
     throw new Error(`Error al obtener estudiantes del equipo: ${error.message}`);
   }
 
-  return data as Student[];
+  // Extract students from the enrollment data
+  const students = (data as EnrollmentWithStudent[])
+    .map(enrollment => enrollment.student?.[0])
+    .filter(student => student !== null && student !== undefined) as Student[];
+
+  return students;
 }
 
 /**
@@ -195,7 +238,10 @@ export async function getTeamAttendanceReport(
 
   return {
     sessions: sessions as Session[],
-    attendance: attendance as ExtendedAttendance[], // Type assertion for the joined data
+    attendance: attendance as (Assistance & {
+      student: Student;
+      session: Session;
+    })[], // Type assertion for the joined data
   };
 }
 
@@ -261,7 +307,11 @@ export async function getAllTeamsAttendanceReport(
 
   return {
     teams,
-    attendance: attendance as ExtendedAttendance[], // Type assertion for the joined data
+    attendance: attendance as (Assistance & {
+      student: Student;
+      session: Session;
+      team: Team;
+    })[], // Type assertion for the joined data
   };
 }
 

@@ -18,8 +18,10 @@ import {
 import { useAllTeams, useAttendanceReport, useAttendanceStats } from "@/features/admin/hooks";
 
 interface AttendanceRecord {
+  id?: string;
   date: string;
-  ispresent: boolean;
+  assisted: boolean;
+  ispresent?: boolean;
   session?: {
     sessionid: string;
     starttime: string;
@@ -29,8 +31,12 @@ interface AttendanceRecord {
     };
   };
   student?: {
-    name: string;
-    email: string;
+    studentid: string;
+    firstname: string;
+    lastname: string;
+    name?: string;
+    email?: string;
+    grade?: string;
   };
 }
 
@@ -58,7 +64,7 @@ export function AdminDashboard() {
   const [expandedTeams, setExpandedTeams] = useState<Set<string>>(new Set());
   const [expandedSessions, setExpandedSessions] = useState<Set<string>>(new Set());
 
-  const { teams, isLoading: /* teamsLoading */ } = useAllTeams();
+  const { teams } = useAllTeams();
   const { attendance, isLoading: attendanceLoading } = useAttendanceReport();
   const { stats, isLoading: statsLoading } = useAttendanceStats();
 

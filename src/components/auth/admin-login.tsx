@@ -44,7 +44,7 @@ export function AdminLogin() {
         setState((prev) => ({
           ...prev,
           loading: false,
-          error: error.message || "Login failed",
+          error: (error as Error).message || "Login failed",
         }));
         return;
       }
