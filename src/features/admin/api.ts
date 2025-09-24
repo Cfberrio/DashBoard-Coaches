@@ -1,14 +1,19 @@
 import { supabase } from "@/lib/supabaseClient";
 import {
   Staff,
-  SessionOccurrence,
   Student,
   Assistance,
   TeamWithSchool,
   Session,
   Team,
-  School,
 } from "../coach/types";
+
+interface ExtendedAttendance extends Assistance {
+  session?: Session & {
+    team?: Team;
+  };
+  student?: Student;
+}
 
 /**
  * Get all teams with school information (admin view)
@@ -190,7 +195,7 @@ export async function getTeamAttendanceReport(
 
   return {
     sessions: sessions as Session[],
-    attendance: attendance as any[], // Type assertion for the joined data
+    attendance: attendance as ExtendedAttendance[], // Type assertion for the joined data
   };
 }
 
@@ -256,7 +261,7 @@ export async function getAllTeamsAttendanceReport(
 
   return {
     teams,
-    attendance: attendance as any[], // Type assertion for the joined data
+    attendance: attendance as ExtendedAttendance[], // Type assertion for the joined data
   };
 }
 
@@ -336,19 +341,19 @@ export async function getAttendanceStats(
 
   // Filter by team if specified
   const filteredAttendance = teamId 
-    ? attendance.filter((a: any) => a.session?.teamid === teamId)
+    ? attendance.filter((a: ExtendedAttendance) => a.session?.teamid === teamId)
     : attendance;
 
   // Calculate statistics
-  const uniqueDates = [...new Set(filteredAttendance.map((a: any) => a.date))];
-  const uniqueStudents = [...new Set(filteredAttendance.map((a: any) => a.studentid))];
+  const uniqueDates = [...new Set(filteredAttendance.map((a: ExtendedAttendance) => a.date))];
+  const uniqueStudents = [...new Set(filteredAttendance.map((a: ExtendedAttendance) => a.studentid))];
   
-  const presentCount = filteredAttendance.filter((a: any) => a.assisted).length;
+  const presentCount = filteredAttendance.filter((a: ExtendedAttendance) => a.assisted).length;
   const totalRecords = filteredAttendance.length;
   
   const attendanceByDate = uniqueDates.map(date => {
-    const dayAttendance = filteredAttendance.filter((a: any) => a.date === date);
-    const present = dayAttendance.filter((a: any) => a.assisted).length;
+    const dayAttendance = filteredAttendance.filter((a: ExtendedAttendance) => a.date === date);
+    const present = dayAttendance.filter((a: ExtendedAttendance) => a.assisted).length;
     const total = dayAttendance.length;
     
     return {

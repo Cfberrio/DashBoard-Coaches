@@ -6,7 +6,6 @@ const nextConfig: NextConfig = {
   },
   // Configuración para mejorar la hidratación
   reactStrictMode: true,
-  swcMinify: true,
   // Configuración para evitar problemas de hidratación
   compiler: {
     // Remover console.log en producción

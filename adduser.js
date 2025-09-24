@@ -6,7 +6,7 @@
  */
 
 const { createClient } = require('@supabase/supabase-js');
-require('dotenv').config({ path: '.env' });
+require('dotenv').config({ path: '.env.local' });
 
 // Obtener argumentos de línea de comandos
 const [,, email, name, userid] = process.argv;
@@ -82,11 +82,18 @@ async function createUser() {
 
   } catch (error) {
     console.error(`❌ Error creando usuario:`, error.message);
+    console.error(`🔍 Error completo:`, error);
     
     if (error.message.includes('Invalid API key')) {
       console.error('💡 Verifica que SUPABASE_SERVICE_ROLE_KEY sea correcta');
     } else if (error.message.includes('permission denied')) {
       console.error('💡 Verifica que la service role key tenga permisos de administrador');
+    } else if (error.message.includes('User not allowed')) {
+      console.error('💡 Posibles causas:');
+      console.error('   - El email ya existe con un proveedor diferente');
+      console.error('   - Configuración de autenticación en Supabase');
+      console.error('   - Políticas RLS que bloquean la creación');
+      console.error('   - Configuración de confirmación de email requerida');
     }
   }
 }

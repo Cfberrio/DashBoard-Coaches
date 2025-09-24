@@ -17,13 +17,30 @@ import {
 } from "lucide-react";
 import { useAllTeams, useAttendanceReport, useAttendanceStats } from "@/features/admin/hooks";
 
+interface AttendanceRecord {
+  date: string;
+  ispresent: boolean;
+  session?: {
+    sessionid: string;
+    starttime: string;
+    endtime: string;
+    team?: {
+      name: string;
+    };
+  };
+  student?: {
+    name: string;
+    email: string;
+  };
+}
+
 interface SessionGroup {
   sessionId: string;
   teamName: string;
   date: string;
   startTime: string;
   endTime: string;
-  attendance: any[];
+  attendance: AttendanceRecord[];
   presentCount: number;
   totalCount: number;
 }
@@ -41,7 +58,7 @@ export function AdminDashboard() {
   const [expandedTeams, setExpandedTeams] = useState<Set<string>>(new Set());
   const [expandedSessions, setExpandedSessions] = useState<Set<string>>(new Set());
 
-  const { teams, isLoading: teamsLoading } = useAllTeams();
+  const { teams, isLoading: /* teamsLoading */ } = useAllTeams();
   const { attendance, isLoading: attendanceLoading } = useAttendanceReport();
   const { stats, isLoading: statsLoading } = useAttendanceStats();
 
@@ -54,7 +71,7 @@ export function AdminDashboard() {
   };
 
   // Función para agrupar asistencia por equipos y luego por sesiones
-  const groupAttendanceByTeamsAndSessions = (attendance: any[]): TeamGroup[] => {
+  const groupAttendanceByTeamsAndSessions = (attendance: AttendanceRecord[]): TeamGroup[] => {
     const teamMap = new Map<string, TeamGroup>();
 
     attendance.forEach((record) => {
