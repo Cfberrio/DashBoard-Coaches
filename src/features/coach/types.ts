@@ -3,6 +3,7 @@ export type Team = {
   name: string;
   description?: string | null;
   isactive: boolean;
+  isongoing?: boolean;
   participants?: number;
   price?: number;
   schoolid?: number;

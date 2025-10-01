@@ -91,7 +91,8 @@ export async function getMyTeams(): Promise<TeamWithSchool[]> {
       teamid, 
       name, 
       description, 
-      isactive, 
+      isactive,
+      isongoing,
       participants, 
       price,
       schoolid,
@@ -104,6 +105,7 @@ export async function getMyTeams(): Promise<TeamWithSchool[]> {
     )
     .in("teamid", teamIds)
     .eq("isactive", true)
+    .eq("isongoing", false)
     .order("name");
 
   if (error) {
