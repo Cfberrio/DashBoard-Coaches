@@ -96,6 +96,7 @@ export async function getMyTeams(): Promise<TeamWithSchool[]> {
       participants, 
       price,
       schoolid,
+      created_at,
       school:schoolid (
         schoolid,
         name,
@@ -105,8 +106,7 @@ export async function getMyTeams(): Promise<TeamWithSchool[]> {
     )
     .in("teamid", teamIds)
     .eq("isactive", true)
-    .eq("isongoing", false)
-    .order("name");
+    .order("created_at", { ascending: false });
 
   if (error) {
     throw new Error(`Error al obtener equipos: ${error.message}`);
