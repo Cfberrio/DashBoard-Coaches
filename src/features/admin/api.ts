@@ -19,6 +19,7 @@ interface RawTeamWithSchool {
   teamid: string;
   name: string;
   description?: string | null;
+  status?: string;
   isactive: boolean;
   participants?: number;
   price?: number;
@@ -44,7 +45,8 @@ export async function getAllTeams(): Promise<TeamWithSchool[]> {
       `
       teamid, 
       name, 
-      description, 
+      description,
+      status,
       isactive, 
       participants, 
       price,
@@ -56,7 +58,7 @@ export async function getAllTeams(): Promise<TeamWithSchool[]> {
       )
     `
     )
-    .eq("isactive", true)
+    .in("status", ["ongoing", "closed"])
     .order("name");
 
   if (error) {
@@ -66,6 +68,7 @@ export async function getAllTeams(): Promise<TeamWithSchool[]> {
   // Convert raw data to proper format
   const teams: TeamWithSchool[] = (data as RawTeamWithSchool[]).map(team => ({
     ...team,
+    status: team.status,
     school: team.school?.[0] ? {
       name: team.school[0].name,
       location: team.school[0].location || ''

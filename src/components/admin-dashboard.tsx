@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { 
   BarChart3, 
   Users, 
@@ -13,9 +14,11 @@ import {
   Eye,
   Clock,
   ChevronDown,
-  ChevronRight
+  ChevronRight,
+  Mail
 } from "lucide-react";
 import { useAllTeams, useAttendanceReport, useAttendanceStats } from "@/features/admin/hooks";
+import { CoachEmailCampaign } from "@/components/marketing/coach-email-campaign";
 
 interface AttendanceRecord {
   id?: string;
@@ -298,18 +301,44 @@ export function AdminDashboard() {
             Admin Dashboard
           </h1>
           <p className="text-gray-600">
-            Monitor attendance across all teams and sessions
+            Manage attendance and email campaigns
           </p>
         </div>
-        <Button 
-          onClick={exportToPDF}
-          disabled={attendanceLoading || attendance.length === 0}
-          className="bg-blue-600 hover:bg-blue-700"
-        >
-          <Download className="h-4 w-4 mr-2" />
-          Export PDF
-        </Button>
       </div>
+
+      {/* Tabs */}
+      <Tabs defaultValue="attendance" className="w-full">
+        <TabsList>
+          <TabsTrigger value="attendance" className="flex items-center gap-2">
+            <BarChart3 className="h-4 w-4" />
+            Attendance
+          </TabsTrigger>
+          <TabsTrigger value="email-campaigns" className="flex items-center gap-2">
+            <Mail className="h-4 w-4" />
+            Email Campaigns
+          </TabsTrigger>
+        </TabsList>
+
+        {/* Attendance Tab */}
+        <TabsContent value="attendance" className="space-y-6 mt-6">
+          <div className="flex justify-between items-center">
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900">
+                Attendance Monitoring
+              </h2>
+              <p className="text-gray-600">
+                View attendance across all teams and sessions
+              </p>
+            </div>
+            <Button 
+              onClick={exportToPDF}
+              disabled={attendanceLoading || attendance.length === 0}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              <Download className="h-4 w-4 mr-2" />
+              Export PDF
+            </Button>
+          </div>
 
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -632,6 +661,13 @@ export function AdminDashboard() {
           </Card>
         </div>
       )}
+        </TabsContent>
+
+        {/* Email Campaigns Tab */}
+        <TabsContent value="email-campaigns" className="mt-6">
+          <CoachEmailCampaign />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

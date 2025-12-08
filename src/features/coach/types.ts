@@ -2,8 +2,9 @@ export type Team = {
   teamid: string;
   name: string;
   description?: string | null;
-  isactive: boolean;
-  isongoing?: boolean;
+  status?: string; // 'ongoing', 'closed', etc.
+  isactive: boolean; // Keep for backwards compatibility
+  isongoing?: boolean; // Keep for backwards compatibility
   participants?: number;
   price?: number;
   schoolid?: number;
