@@ -236,7 +236,7 @@ export async function POST(request: NextRequest) {
       errors: [] as Array<{ coach: string; error: string }>,
     };
 
-    for (const [_coachId, coachData] of coachMap) {
+    for (const coachData of coachMap.values()) {
       console.log(`Processing coach: ${coachData.name} (${coachData.email})`);
       try {
         // Validate email
