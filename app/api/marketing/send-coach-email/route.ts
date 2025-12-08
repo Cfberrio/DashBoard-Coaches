@@ -150,7 +150,7 @@ export async function POST(request: NextRequest) {
     // 2. Group by coach (remove duplicates)
     const coachMap = new Map<string, CoachData>();
 
-    sessions.forEach((session: any) => {
+    sessions.forEach((session: Record<string, unknown>) => {
       // Handle relations that can come as object or array
       const coach = Array.isArray(session.staff) 
         ? session.staff[0] 
@@ -236,7 +236,7 @@ export async function POST(request: NextRequest) {
       errors: [] as Array<{ coach: string; error: string }>,
     };
 
-    for (const [coachId, coachData] of coachMap) {
+    for (const [_coachId, coachData] of coachMap) {
       console.log(`Processing coach: ${coachData.name} (${coachData.email})`);
       try {
         // Validate email
@@ -276,7 +276,13 @@ export async function POST(request: NextRequest) {
         );
 
         // Prepare email options
-        const mailOptions: any = {
+        const mailOptions: {
+          from: string;
+          to: string;
+          subject: string;
+          html?: string;
+          text?: string;
+        } = {
           from: `"${SMTP_FROM_NAME}" <${SMTP_FROM_EMAIL}>`,
           to: coachData.email,
           subject: personalizedSubject,

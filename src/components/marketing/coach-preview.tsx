@@ -75,7 +75,7 @@ export function CoachPreview({ selectedTeamIds }: CoachPreviewProps) {
         // Group by coach (remove duplicates)
         const coachMap = new Map<string, Coach>();
 
-        sessions.forEach((session: any) => {
+        sessions.forEach((session: Record<string, unknown>) => {
           // Handle relations that can come as object or array
           const coach = Array.isArray(session.staff)
             ? session.staff[0]
