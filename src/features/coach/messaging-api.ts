@@ -54,16 +54,17 @@ export async function getCoachTeams(): Promise<CoachTeam[]> {
   // Deduplicate teams (a coach can have multiple sessions for the same team)
   const teamMap = new Map<string, CoachTeam>();
 
-  sessions.forEach((session: { team?: { teamid: string; name: string; status: string } }) => {
+  sessions.forEach((session: any) => {
+    const team = session.team;
     if (
-      session.team &&
-      ["ongoing", "closed"].includes(session.team.status)
+      team &&
+      ["ongoing", "closed"].includes(team.status)
     ) {
-      if (!teamMap.has(session.team.teamid)) {
-        teamMap.set(session.team.teamid, {
-          teamid: session.team.teamid,
-          name: session.team.name,
-          status: session.team.status,
+      if (!teamMap.has(team.teamid)) {
+        teamMap.set(team.teamid, {
+          teamid: team.teamid,
+          name: team.name,
+          status: team.status,
         });
       }
     }
