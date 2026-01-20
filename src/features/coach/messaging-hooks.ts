@@ -94,7 +94,7 @@ export function useTeamMessages(teamId: string | null, parentId: string | null) 
           table: "message",
           filter: `teamid=eq.${teamId}`,  // Only filter by team - Realtime doesn't support comma-separated filters
         },
-        (payload) => {
+        (payload: any) => {
           console.log("📨 Realtime message event:", payload.eventType, payload);
 
           // Filter by parentId on the client side
