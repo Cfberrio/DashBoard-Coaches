@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -10,16 +11,23 @@ import {
   CheckCircle,
   Calendar,
   Search,
+  MessageSquare,
 } from "lucide-react";
 import {
   useDashboard,
   useOccurrenceAttendance,
   AttendanceStatusBadge,
 } from "@/features/coach/wiring";
+import { useCurrentCoachId } from "@/features/coach/messaging-hooks";
+import { useCoachNotifications } from "@/hooks/useCoachNotifications";
+import { UnreadBadge } from "@/components/notifications/UnreadBadge";
 
 
 
 export function CoachDashboard() {
+  const router = useRouter();
+  const { data: coachId } = useCurrentCoachId();
+  const { totalUnread } = useCoachNotifications(coachId || null);
   const [selectedTeam, setSelectedTeam] = useState<string>("");
   const [attendanceMode, setAttendanceMode] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -415,6 +423,19 @@ export function CoachDashboard() {
               disabled={!currentOccurrence}
             >
               {attendanceMode ? "Finish" : "Start Check-in"}
+            </Button>
+            <Button
+              variant="outline"
+              className="w-full h-10 sm:h-9 text-sm sm:text-base flex items-center justify-center gap-2 relative"
+              onClick={() => router.push("/messages")}
+            >
+              <MessageSquare className="h-4 w-4" />
+              Messages
+              {totalUnread > 0 && (
+                <span className="absolute -top-1 -right-1">
+                  <UnreadBadge count={totalUnread} size="sm" />
+                </span>
+              )}
             </Button>
           </CardContent>
         </Card>
