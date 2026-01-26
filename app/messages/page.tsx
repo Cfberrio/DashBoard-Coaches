@@ -8,7 +8,7 @@
 "use client";
 
 import { Suspense } from "react";
-import { CoachMessagesClient } from "@/components/coach-messages/CoachMessagesClient";
+import { MessagingTabs } from "@/components/coach-messages/MessagingTabs";
 import { CoachDataProvider } from "@/features/coach/wiring";
 import { NotificationsProvider } from "@/contexts/NotificationsContext";
 
@@ -24,7 +24,7 @@ export default function MessagesPage() {
             </div>
           </div>
         }>
-          <CoachMessagesClient />
+          <MessagingTabs />
         </Suspense>
       </CoachDataProvider>
     </NotificationsProvider>

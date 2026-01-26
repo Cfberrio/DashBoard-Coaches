@@ -6,7 +6,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabaseClient";
-import { getCoachTeams, getTeamMessages, sendCoachMessage, getParentsByTeam } from "./messaging-api";
+import { getCoachTeams, getTeamMessages, sendCoachMessage, getParentsByTeam, sendBroadcastMessage, getTeamBroadcasts, getBroadcastConversations } from "./messaging-api";
 import { Message } from "./messaging-types";
 
 // Query keys
@@ -261,4 +261,52 @@ export function useGlobalMessageNotifications(
   }, [coachId]); // Only re-run if coachId changes
 
   return { connected };
+}
+
+/**
+ * Hook to send broadcast message to entire team
+ */
+export function useSendBroadcast() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      teamId,
+      coachId,
+      body,
+    }: {
+      teamId: string;
+      coachId: string;
+      body: string;
+    }) => sendBroadcastMessage(teamId, coachId, body),
+    onSuccess: (_, variables) => {
+      // Invalidate broadcasts query for this team
+      queryClient.invalidateQueries({
+        queryKey: ["team-broadcasts", variables.teamId, variables.coachId],
+      });
+    },
+  });
+}
+
+/**
+ * Hook to get all broadcasts for a team
+ */
+export function useTeamBroadcasts(teamId: string | null, coachId: string | null) {
+  return useQuery({
+    queryKey: ["team-broadcasts", teamId, coachId],
+    queryFn: () => getTeamBroadcasts(teamId!, coachId!),
+    enabled: !!teamId && !!coachId,
+    staleTime: 30000,
+  });
+}
+
+/**
+ * Hook to get conversations from a specific broadcast
+ */
+export function useBroadcastConversations(broadcastId: string | null) {
+  return useQuery({
+    queryKey: ["broadcast-conversations", broadcastId],
+    queryFn: () => getBroadcastConversations(broadcastId!),
+    enabled: !!broadcastId,
+  });
 }

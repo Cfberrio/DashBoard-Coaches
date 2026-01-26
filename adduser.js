@@ -57,15 +57,30 @@ async function createUser() {
     const { data: authData, error: authError } = await supabase.auth.admin.createUser(userData);
 
     if (authError) {
-      if (authError.message.includes('already registered')) {
+      if (authError.message.includes('already registered') || authError.code === 'email_exists') {
         console.log(`⚠️  Usuario ${email} ya existe en Supabase Auth`);
         
-        // Obtener información del usuario existente
-        const { data: existingUser } = await supabase.auth.admin.getUserByEmail(email);
-        if (existingUser.user) {
-          console.log(`✅ Usuario existente encontrado: ${existingUser.user.id}`);
-          console.log(`📧 Email: ${existingUser.user.email}`);
-          console.log(`📅 Creado: ${existingUser.user.created_at}`);
+        // Obtener información del usuario existente usando listUsers
+        try {
+          const { data: { users }, error: getUserError } = await supabase.auth.admin.listUsers();
+          if (getUserError) {
+            console.error(`❌ Error obteniendo usuarios:`, getUserError.message);
+            return;
+          }
+          
+          const existingUser = users?.find(u => u.email === email);
+          if (existingUser) {
+            console.log(`\n✅ USUARIO EXISTENTE:`);
+            console.log(`🆔 ID: ${existingUser.id}`);
+            console.log(`📧 Email: ${existingUser.email}`);
+            console.log(`📅 Creado: ${existingUser.created_at}`);
+            console.log(`✅ Email confirmado: ${existingUser.email_confirmed_at ? 'Sí' : 'No'}`);
+            console.log(`\n🎉 El usuario puede hacer login con OTP usando: ${email}`);
+          } else {
+            console.log(`⚠️  No se pudo obtener información del usuario existente`);
+          }
+        } catch (err) {
+          console.error(`❌ Error buscando usuario:`, err.message);
         }
         return;
       }

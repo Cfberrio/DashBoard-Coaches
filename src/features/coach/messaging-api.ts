@@ -8,7 +8,7 @@
  */
 
 import { supabase } from "@/lib/supabaseClient";
-import { CoachTeam, Message, MessageInsert, ParentWithStudents } from "./messaging-types";
+import { CoachTeam, Message, MessageInsert, ParentWithStudents, BroadcastInfo } from "./messaging-types";
 
 /**
  * Get teams for the current authenticated coach
@@ -262,4 +262,194 @@ export async function getParentById(parentId: string): Promise<{
   }
 
   return data;
+}
+
+/**
+ * Send broadcast message to all parents in a team
+ * Creates one message record per parent, all sharing the same broadcast_id
+ */
+export async function sendBroadcastMessage(
+  teamId: string,
+  coachId: string,
+  body: string
+): Promise<{ broadcast_id: string; sent_count: number }> {
+  const trimmedBody = body.trim();
+
+  if (!trimmedBody) {
+    throw new Error("Message body cannot be empty");
+  }
+
+  if (!teamId || !coachId) {
+    throw new Error("Missing required fields");
+  }
+
+  // 1. Get all parents for this team
+  const parents = await getParentsByTeam(teamId);
+
+  if (parents.length === 0) {
+    throw new Error("No parents found for this team");
+  }
+
+  // 2. Generate a unique broadcast_id
+  const broadcast_id = crypto.randomUUID();
+
+  // 3. Create message records for each parent
+  const messageInserts = parents.map((parent) => ({
+    teamid: teamId,
+    sender_role: "coach" as const,
+    coachid: coachId,
+    parentid: parent.parentid,
+    body: trimmedBody,
+    broadcast_id: broadcast_id,
+  }));
+
+  // 4. Insert all messages at once
+  const { data, error } = await supabase
+    .from("message")
+    .insert(messageInserts)
+    .select();
+
+  if (error) {
+    console.error("Error sending broadcast:", error);
+    // Provide helpful error message if migration not run
+    if (error.message?.includes("broadcast_id") || error.code === "42703") {
+      throw new Error(
+        "La columna broadcast_id no existe en la tabla message. " +
+        "Por favor ejecuta la migración SQL primero. " +
+        "Consulta INSTRUCCIONES-BROADCAST.md para más detalles."
+      );
+    }
+    throw new Error(`Failed to send broadcast: ${error.message}`);
+  }
+
+  return {
+    broadcast_id,
+    sent_count: data?.length || 0,
+  };
+}
+
+/**
+ * Get all broadcasts sent by a coach for a specific team
+ * Returns unique broadcasts with count of responses
+ */
+export async function getTeamBroadcasts(
+  teamId: string,
+  coachId: string
+): Promise<BroadcastInfo[]> {
+  if (!teamId || !coachId) {
+    throw new Error("Team ID and Coach ID are required");
+  }
+
+  // Get all broadcast messages for this team/coach
+  const { data: broadcasts, error } = await supabase
+    .from("message")
+    .select("*")
+    .eq("teamid", teamId)
+    .eq("coachid", coachId)
+    .eq("sender_role", "coach")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Error fetching broadcasts:", error);
+    // If column doesn't exist yet (migration not run), return empty array
+    if (error.message?.includes("broadcast_id") || error.code === "42703") {
+      console.warn("⚠️ La columna broadcast_id no existe. Ejecuta la migración SQL primero.");
+      return [];
+    }
+    throw new Error(`Error loading broadcasts: ${error.message}`);
+  }
+
+  if (!broadcasts || broadcasts.length === 0) {
+    return [];
+  }
+
+  // Filter messages that have broadcast_id (only broadcast messages)
+  const broadcastMessages = broadcasts.filter((msg: any) => msg.broadcast_id != null);
+
+  if (broadcastMessages.length === 0) {
+    return [];
+  }
+
+  // Group by broadcast_id and get first message of each broadcast
+  const broadcastMap = new Map<string, BroadcastInfo>();
+
+  for (const msg of broadcastMessages) {
+    if (msg.broadcast_id && !broadcastMap.has(msg.broadcast_id)) {
+      // Count responses for this broadcast
+      const { count } = await supabase
+        .from("message")
+        .select("*", { count: "exact", head: true })
+        .eq("teamid", teamId)
+        .eq("broadcast_id", msg.broadcast_id)
+        .eq("sender_role", "parent");
+
+      // Get team name
+      const { data: team } = await supabase
+        .from("team")
+        .select("name")
+        .eq("teamid", teamId)
+        .single();
+
+      broadcastMap.set(msg.broadcast_id, {
+        broadcast_id: msg.broadcast_id,
+        teamid: msg.teamid,
+        teamname: team?.name || "Unknown Team",
+        body: msg.body,
+        created_at: msg.created_at,
+        recipient_count: 0, // Will be calculated below
+        response_count: count || 0,
+      });
+    }
+  }
+
+  // Count recipients for each broadcast
+  for (const [broadcast_id, info] of broadcastMap.entries()) {
+    const { count } = await supabase
+      .from("message")
+      .select("*", { count: "exact", head: true })
+      .eq("broadcast_id", broadcast_id)
+      .eq("sender_role", "coach");
+
+    info.recipient_count = count || 0;
+  }
+
+  return Array.from(broadcastMap.values());
+}
+
+/**
+ * Get all conversations (individual threads) resulting from a broadcast
+ */
+export async function getBroadcastConversations(
+  broadcastId: string
+): Promise<Array<{ parentid: string; parent_name: string; last_message: Message }>> {
+  if (!broadcastId) {
+    throw new Error("Broadcast ID is required");
+  }
+
+  // Get all messages from this broadcast
+  const { data: messages, error } = await supabase
+    .from("message")
+    .select("*, parent:parentid(firstname, lastname)")
+    .eq("broadcast_id", broadcastId)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Error fetching broadcast conversations:", error);
+    throw new Error(`Error loading conversations: ${error.message}`);
+  }
+
+  // Group by parentid to get one entry per parent
+  const conversationMap = new Map();
+
+  for (const msg of messages || []) {
+    if (msg.parentid && !conversationMap.has(msg.parentid)) {
+      conversationMap.set(msg.parentid, {
+        parentid: msg.parentid,
+        parent_name: `${msg.parent?.firstname} ${msg.parent?.lastname}`,
+        last_message: msg,
+      });
+    }
+  }
+
+  return Array.from(conversationMap.values());
 }
