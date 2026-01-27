@@ -314,9 +314,9 @@ export async function sendBroadcastMessage(
     // Provide helpful error message if migration not run
     if (error.message?.includes("broadcast_id") || error.code === "42703") {
       throw new Error(
-        "La columna broadcast_id no existe en la tabla message. " +
-        "Por favor ejecuta la migración SQL primero. " +
-        "Consulta INSTRUCCIONES-BROADCAST.md para más detalles."
+        "The broadcast_id column does not exist in the message table. " +
+        "Please run the SQL migration first. " +
+        "See INSTRUCCIONES-BROADCAST.md for more details."
       );
     }
     throw new Error(`Failed to send broadcast: ${error.message}`);
@@ -353,7 +353,7 @@ export async function getTeamBroadcasts(
     console.error("Error fetching broadcasts:", error);
     // If column doesn't exist yet (migration not run), return empty array
     if (error.message?.includes("broadcast_id") || error.code === "42703") {
-      console.warn("⚠️ La columna broadcast_id no existe. Ejecuta la migración SQL primero.");
+      console.warn("⚠️ The broadcast_id column does not exist. Run the SQL migration first.");
       return [];
     }
     throw new Error(`Error loading broadcasts: ${error.message}`);

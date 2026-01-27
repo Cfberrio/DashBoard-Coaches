@@ -40,7 +40,7 @@ export function BroadcastMessagesClient() {
     return (
       <div className="max-w-6xl mx-auto p-4 sm:p-6">
         <div className="text-center text-gray-500 py-8">
-          <p className="text-sm">Por favor inicia sesión para acceder a los mensajes</p>
+          <p className="text-sm">Please log in to access messages</p>
         </div>
       </div>
     );
@@ -52,10 +52,10 @@ export function BroadcastMessagesClient() {
       {broadcastsError && (
         <Alert className="mb-6 border-amber-500 bg-amber-50">
           <AlertTriangle className="h-4 w-4 text-amber-600" />
-          <AlertTitle className="text-amber-900">Migración SQL Requerida</AlertTitle>
+          <AlertTitle className="text-amber-900">SQL Migration Required</AlertTitle>
           <AlertDescription className="text-amber-800">
-            La funcionalidad de broadcast requiere ejecutar una migración en la base de datos.
-            Por favor consulta el archivo <code className="bg-amber-100 px-1 rounded">INSTRUCCIONES-BROADCAST.md</code> para más detalles.
+            The broadcast functionality requires running a database migration.
+            Please check the <code className="bg-amber-100 px-1 rounded">INSTRUCCIONES-BROADCAST.md</code> file for more details.
           </AlertDescription>
         </Alert>
       )}
@@ -63,7 +63,7 @@ export function BroadcastMessagesClient() {
       {/* Team Selection */}
       <Card className="mb-6">
         <CardHeader>
-          <CardTitle className="text-lg">Seleccionar Team</CardTitle>
+          <CardTitle className="text-lg">Select Team</CardTitle>
         </CardHeader>
         <CardContent>
           <TeamSelector
@@ -81,7 +81,7 @@ export function BroadcastMessagesClient() {
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
                 <Send className="h-5 w-5" />
-                Enviar Mensaje a Todo el Team
+                Send Message to Entire Team
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -92,7 +92,7 @@ export function BroadcastMessagesClient() {
           {/* Broadcast History */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Historial de Mensajes Enviados</CardTitle>
+              <CardTitle className="text-lg">Broadcast History</CardTitle>
             </CardHeader>
             <CardContent>
               <BroadcastHistory
@@ -107,7 +107,7 @@ export function BroadcastMessagesClient() {
       {/* Help text when no team selected */}
       {!selectedTeamId && teams.length > 0 && (
         <div className="text-center text-gray-500 py-8">
-          <p className="text-sm">Selecciona un team para enviar mensajes</p>
+          <p className="text-sm">Select a team to send messages</p>
         </div>
       )}
     </div>

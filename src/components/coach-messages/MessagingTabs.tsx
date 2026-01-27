@@ -19,11 +19,11 @@ export function MessagingTabs() {
             <TabsList className="grid w-full max-w-md grid-cols-2">
               <TabsTrigger value="individual" className="flex items-center gap-2">
                 <MessageSquare className="h-4 w-4" />
-                Mensajes Individuales
+                Individual Messages
               </TabsTrigger>
               <TabsTrigger value="broadcast" className="flex items-center gap-2">
                 <Users className="h-4 w-4" />
-                Mensajes de Team
+                Team Messages
               </TabsTrigger>
             </TabsList>
           </div>

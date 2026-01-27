@@ -9,7 +9,6 @@ import { BroadcastInfo } from "@/features/coach/messaging-types";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
-import { es } from "date-fns/locale";
 import { MessageSquare } from "lucide-react";
 
 interface BroadcastHistoryProps {
@@ -19,13 +18,13 @@ interface BroadcastHistoryProps {
 
 export function BroadcastHistory({ broadcasts, isLoading }: BroadcastHistoryProps) {
   if (isLoading) {
-    return <div className="text-center text-gray-500 py-4">Cargando...</div>;
+    return <div className="text-center text-gray-500 py-4">Loading...</div>;
   }
 
   if (broadcasts.length === 0) {
     return (
       <div className="text-center text-gray-500 py-8">
-        <p className="text-sm">No has enviado mensajes a este team todavía</p>
+        <p className="text-sm">You haven't sent any messages to this team yet</p>
       </div>
     );
   }
@@ -41,17 +40,17 @@ export function BroadcastHistory({ broadcasts, isLoading }: BroadcastHistoryProp
               </p>
               <div className="flex items-center gap-4 text-xs text-gray-500">
                 <span>
-                  {format(new Date(broadcast.created_at), "PPp", { locale: es })}
+                  {format(new Date(broadcast.created_at), "PPp")}
                 </span>
                 <span>•</span>
-                <span>Enviado a {broadcast.recipient_count} parents</span>
+                <span>Sent to {broadcast.recipient_count} parents</span>
               </div>
             </div>
             
             {broadcast.response_count > 0 && (
               <Badge variant="secondary" className="flex items-center gap-1">
                 <MessageSquare className="h-3 w-3" />
-                {broadcast.response_count} {broadcast.response_count === 1 ? "respuesta" : "respuestas"}
+                {broadcast.response_count} {broadcast.response_count === 1 ? "response" : "responses"}
               </Badge>
             )}
           </div>

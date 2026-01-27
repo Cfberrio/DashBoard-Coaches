@@ -39,7 +39,7 @@ export function BroadcastPanel({ teamId, coachId }: BroadcastPanelProps) {
       setTimeout(() => setShowSuccess(false), 5000);
     } catch (error) {
       console.error("Error sending broadcast:", error);
-      alert("Error al enviar mensaje. Por favor intenta de nuevo.");
+      alert("Error sending message. Please try again.");
     }
   };
 
@@ -49,7 +49,7 @@ export function BroadcastPanel({ teamId, coachId }: BroadcastPanelProps) {
       <div className="flex items-center gap-2 text-sm text-gray-600">
         <Users className="h-4 w-4" />
         <span>
-          Este mensaje se enviará a {parents.length}{" "}
+          This message will be sent to {parents.length}{" "}
           {parents.length === 1 ? "parent" : "parents"}
         </span>
       </div>
@@ -59,14 +59,14 @@ export function BroadcastPanel({ teamId, coachId }: BroadcastPanelProps) {
         <Alert className="bg-green-50 border-green-200">
           <CheckCircle2 className="h-4 w-4 text-green-600" />
           <AlertDescription className="text-green-800">
-            Mensaje enviado exitosamente a {parents.length} parents
+            Message sent successfully to {parents.length} parents
           </AlertDescription>
         </Alert>
       )}
 
       {/* Message textarea */}
       <Textarea
-        placeholder="Escribe tu mensaje para todo el team..."
+        placeholder="Write your message for the entire team..."
         value={message}
         onChange={(e) => setMessage(e.target.value)}
         disabled={sendBroadcast.isPending}
@@ -80,13 +80,13 @@ export function BroadcastPanel({ teamId, coachId }: BroadcastPanelProps) {
         className="w-full"
       >
         {sendBroadcast.isPending
-          ? "Enviando..."
-          : `Enviar a ${parents.length} parents`}
+          ? "Sending..."
+          : `Send to ${parents.length} parents`}
       </Button>
 
       {parents.length === 0 && (
         <p className="text-sm text-amber-600">
-          No hay parents en este team. Asegúrate de que haya estudiantes inscritos.
+          No parents in this team. Make sure there are enrolled students.
         </p>
       )}
     </div>
