@@ -62,7 +62,7 @@ export async function getAllTeams(): Promise<TeamWithSchool[]> {
     .order("name");
 
   if (error) {
-    throw new Error(`Error al obtener equipos: ${error.message}`);
+    throw new Error(`Error fetching teams: ${error.message}`);
   }
 
   // Convert raw data to proper format
@@ -88,7 +88,7 @@ export async function getAllSessions(): Promise<Session[]> {
     .order("startdate", { ascending: false });
 
   if (error) {
-    throw new Error(`Error al obtener sesiones: ${error.message}`);
+    throw new Error(`Error fetching sessions: ${error.message}`);
   }
 
   return data as Session[];
@@ -105,7 +105,7 @@ export async function getSessionsByTeam(teamId: string): Promise<Session[]> {
     .order("startdate", { ascending: false });
 
   if (error) {
-    throw new Error(`Error al obtener sesiones del equipo: ${error.message}`);
+    throw new Error(`Error fetching team sessions: ${error.message}`);
   }
 
   return data as Session[];
@@ -134,7 +134,7 @@ export async function getStudentsByTeam(teamId: string): Promise<Student[]> {
     .eq("isactive", true);
 
   if (error) {
-    throw new Error(`Error al obtener estudiantes del equipo: ${error.message}`);
+    throw new Error(`Error fetching team students: ${error.message}`);
   }
 
   // Extract students from the enrollment data
@@ -159,7 +159,7 @@ export async function getAttendanceByOccurrence(
     .eq("date", occurrenceDate);
 
   if (error) {
-    throw new Error(`Error al obtener asistencia: ${error.message}`);
+    throw new Error(`Error fetching attendance: ${error.message}`);
   }
 
   return data as Assistance[];
@@ -236,7 +236,7 @@ export async function getTeamAttendanceReport(
   const { data: attendance, error: attendanceError } = await attendanceQuery.order("date", { ascending: false });
 
   if (attendanceError) {
-    throw new Error(`Error al obtener registros de asistencia: ${attendanceError.message}`);
+    throw new Error(`Error fetching attendance records: ${attendanceError.message}`);
   }
 
   return {
@@ -305,7 +305,7 @@ export async function getAllTeamsAttendanceReport(
   const { data: attendance, error: attendanceError } = await attendanceQuery.order("date", { ascending: false });
 
   if (attendanceError) {
-    throw new Error(`Error al obtener registros de asistencia: ${attendanceError.message}`);
+    throw new Error(`Error fetching attendance records: ${attendanceError.message}`);
   }
 
   return {
@@ -332,7 +332,7 @@ export async function getCoachById(coachId: string): Promise<Staff | null> {
     if (error.code === "PGRST116") {
       return null; // Coach not found
     }
-    throw new Error(`Error al obtener información del coach: ${error.message}`);
+    throw new Error(`Error fetching coach information: ${error.message}`);
   }
 
   return data as Staff;
@@ -380,7 +380,7 @@ export async function getAttendanceStats(
   const { data: attendance, error } = await attendanceQuery;
 
   if (error) {
-    throw new Error(`Error al obtener estadísticas: ${error.message}`);
+    throw new Error(`Error fetching statistics: ${error.message}`);
   }
 
   if (!attendance || attendance.length === 0) {

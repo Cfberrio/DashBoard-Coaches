@@ -1,14 +1,14 @@
 /**
  * useCoachNotifications Hook
  * 
- * Sistema de notificaciones basado en Base de Datos para Coaches
- * Reemplaza el sistema anterior basado en localStorage
+ * Database-based notification system for Coaches
+ * Replaces the previous localStorage-based system
  * 
- * Funcionalidades:
- * - Obtiene conteos de mensajes no leídos desde Supabase
- * - Agrupa notificaciones por conversación (team + parent)
- * - Marca mensajes como leídos en la tabla message_read_status
- * - Actualiza en tiempo real con Supabase Realtime
+ * Features:
+ * - Retrieves unread message counts from Supabase
+ * - Groups notifications by conversation (team + parent)
+ * - Marks messages as read in the message_read_status table
+ * - Updates in real-time with Supabase Realtime
  */
 
 "use client";
@@ -32,8 +32,8 @@ export function useCoachNotifications(coachId: string | null) {
   const [migrationNeeded, setMigrationNeeded] = useState(false);
 
   /**
-   * Carga los conteos de mensajes no leídos desde la base de datos
-   * Usa la función RPC get_coach_unread_counts
+   * Loads unread message counts from the database
+   * Uses the RPC function get_coach_unread_counts
    */
   const loadUnreadCounts = useCallback(async () => {
     if (!coachId) {
@@ -55,33 +55,33 @@ export function useCoachNotifications(coachId: string | null) {
       if (rpcError) {
         console.error('❌ Error calling get_coach_unread_counts:', rpcError);
         
-        // Detectar si es un error de función no encontrada
+        // Detect if it's a function not found error
         const errorMessage = rpcError.message || '';
         if (errorMessage.includes('function') || errorMessage.includes('does not exist') || !errorMessage) {
           setMigrationNeeded(true);
           console.error('');
           console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-          console.error('🚨 MIGRACIÓN SQL NO EJECUTADA');
+          console.error('🚨 SQL MIGRATION NOT EXECUTED');
           console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
           console.error('');
-          console.error('La función get_coach_unread_counts no existe en Supabase.');
+          console.error('The function get_coach_unread_counts does not exist in Supabase.');
           console.error('');
-          console.error('📋 PASOS PARA SOLUCIONAR:');
+          console.error('📋 STEPS TO FIX:');
           console.error('');
-          console.error('1. Ve a: https://supabase.com/dashboard');
-          console.error('2. Selecciona tu proyecto');
-          console.error('3. Click en "SQL Editor" (menú lateral)');
-          console.error('4. Click en "New Query"');
-          console.error('5. Copia el archivo: supabase/migrations/EJECUTAR-PRIMERO.sql');
-          console.error('6. Pega todo el contenido y haz click en "Run"');
-          console.error('7. Recarga esta página');
+          console.error('1. Go to: https://supabase.com/dashboard');
+          console.error('2. Select your project');
+          console.error('3. Click on "SQL Editor" (sidebar menu)');
+          console.error('4. Click on "New Query"');
+          console.error('5. Copy the file: supabase/migrations/EJECUTAR-PRIMERO.sql');
+          console.error('6. Paste all content and click "Run"');
+          console.error('7. Reload this page');
           console.error('');
-          console.error('📁 Archivo: supabase/migrations/EJECUTAR-PRIMERO.sql');
+          console.error('📁 File: supabase/migrations/EJECUTAR-PRIMERO.sql');
           console.error('');
           console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
           console.error('');
           
-          setError('Migración SQL no ejecutada. Ver consola para instrucciones.');
+          setError('SQL migration not executed. Check console for instructions.');
           setNotifications([]);
           setTotalUnread(0);
           setLoading(false);
@@ -96,7 +96,7 @@ export function useCoachNotifications(coachId: string | null) {
       const notificationItems = (data || []) as CoachNotificationItem[];
       setNotifications(notificationItems);
 
-      // Calcular total de mensajes no leídos
+      // Calculate total unread messages
       const total = notificationItems.reduce(
         (sum, item) => sum + parseInt(String(item.unread_count)),
         0
@@ -116,9 +116,9 @@ export function useCoachNotifications(coachId: string | null) {
   }, [coachId]);
 
   /**
-   * Marca todos los mensajes de una conversación específica como leídos
-   * @param teamId - ID del team
-   * @param parentId - ID del parent
+   * Marks all messages from a specific conversation as read
+   * @param teamId - Team ID
+   * @param parentId - Parent ID
    */
   const markAsRead = useCallback(
     async (teamId: string, parentId: string) => {
@@ -130,15 +130,15 @@ export function useCoachNotifications(coachId: string | null) {
       try {
         console.log(`📖 Marking conversation as read: team=${teamId}, parent=${parentId}`);
 
-        // 1. Obtener todos los mensajes NO LEÍDOS de esta conversación
-        // Solo mensajes de PARENTS (que el coach necesita leer)
+        // 1. Get all UNREAD messages from this conversation
+        // Only messages from PARENTS (that the coach needs to read)
         const { data: unreadMessages, error: fetchError } = await supabase
           .from('message')
           .select('id')
           .eq('teamid', teamId)
           .eq('parentid', parentId)
           .eq('coachid', coachId)
-          .eq('sender_role', 'parent');  // Solo mensajes de parents
+          .eq('sender_role', 'parent');  // Only messages from parents
 
         if (fetchError) {
           console.error('❌ Error fetching unread messages:', fetchError);
@@ -152,7 +152,7 @@ export function useCoachNotifications(coachId: string | null) {
 
         console.log(`📝 Found ${unreadMessages.length} messages to potentially mark as read`);
 
-        // 2. Verificar cuáles ya están marcados como leídos
+        // 2. Check which ones are already marked as read
         const { data: alreadyRead, error: checkError } = await supabase
           .from('message_read_status')
           .select('messageid')
@@ -174,11 +174,11 @@ export function useCoachNotifications(coachId: string | null) {
 
         console.log(`📝 Marking ${toMarkAsRead.length} messages as read`);
 
-        // 3. Insertar registros en message_read_status
+        // 3. Insert records in message_read_status
         const readRecords = toMarkAsRead.map((msg) => ({
           messageid: msg.id,
           coachid: coachId,
-          parentid: null,  // NULL para coaches (ver constraint en tabla)
+          parentid: null,  // NULL for coaches (see table constraint)
         }));
 
         const { error: insertError } = await supabase
@@ -192,22 +192,22 @@ export function useCoachNotifications(coachId: string | null) {
 
         console.log('✅ Successfully marked messages as read');
 
-        // 4. Recargar conteos para actualizar UI
+        // 4. Reload counts to update UI
         await loadUnreadCounts();
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Unknown error';
         console.error('❌ Error marking messages as read:', errorMessage);
-        // No lanzar el error para no interrumpir la navegación
+        // Don't throw the error to avoid interrupting navigation
       }
     },
     [coachId, loadUnreadCounts]
   );
 
   /**
-   * Obtiene el conteo de mensajes no leídos para una conversación específica
-   * @param teamId - ID del team
-   * @param parentId - ID del parent
-   * @returns Número de mensajes no leídos
+   * Gets the unread message count for a specific conversation
+   * @param teamId - Team ID
+   * @param parentId - Parent ID
+   * @returns Number of unread messages
    */
   const getUnreadCount = useCallback(
     (teamId: string, parentId: string): number => {
@@ -220,21 +220,21 @@ export function useCoachNotifications(coachId: string | null) {
   );
 
   // ============================================================================
-  // EFECTO: Carga inicial de conteos
+  // EFFECT: Initial load of counts
   // ============================================================================
   useEffect(() => {
     loadUnreadCounts();
   }, [loadUnreadCounts]);
 
   // ============================================================================
-  // EFECTO: Polling - Recargar conteos cada 10 segundos (Fallback sin Realtime)
+  // EFFECT: Polling - Reload counts every 10 seconds (Fallback without Realtime)
   // ============================================================================
   useEffect(() => {
     if (!coachId) return;
 
     console.log(`🔄 Starting polling for coach: ${coachId}`);
 
-    // Polling cada 10 segundos
+    // Polling every 10 seconds
     const interval = setInterval(() => {
       loadUnreadCounts();
     }, 10000);

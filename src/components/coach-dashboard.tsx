@@ -69,7 +69,7 @@ export function CoachDashboard() {
     (occ) => occ.id === selectedOccurrence
   );
 
-  // Filtrar ocurrencias por equipo seleccionado
+  // Filter occurrences by selected team
   const teamOccurrences =
     occurrences?.filter((occ) => occ.teamid === selectedTeam) || [];
 
@@ -140,7 +140,7 @@ export function CoachDashboard() {
       return;
     }
 
-    // Si no se especifica nuevo estado, alternar entre presente/ausente
+    // If no new status is specified, toggle between present/absent
     const currentAssisted = student.assistance?.assisted || false;
     const newAssisted = assisted !== undefined ? assisted : !currentAssisted;
 
@@ -174,7 +174,7 @@ export function CoachDashboard() {
     return null;
   }
 
-  // Mostrar estado de carga o error
+  // Show loading or error state
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 p-2 sm:p-4 flex items-center justify-center">
@@ -191,10 +191,10 @@ export function CoachDashboard() {
       <div className="min-h-screen bg-gray-50 p-2 sm:p-4 flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-lg font-semibold text-red-600 mb-2">
-            Error al cargar dashboard
+            Error loading dashboard
           </h2>
           <p className="text-sm text-gray-600 mb-4">{error.message}</p>
-          <Button onClick={() => window.location.reload()}>Reintentar</Button>
+          <Button onClick={() => window.location.reload()}>Retry</Button>
         </div>
       </div>
     );
@@ -204,9 +204,9 @@ export function CoachDashboard() {
     return (
       <div className="min-h-screen bg-gray-50 p-2 sm:p-4 flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-lg font-semibold mb-2">Acceso requerido</h2>
+          <h2 className="text-lg font-semibold mb-2">Access Required</h2>
           <p className="text-sm text-gray-600">
-            Debes iniciar sesión para acceder al dashboard.
+            You must log in to access the dashboard.
           </p>
         </div>
       </div>
@@ -284,7 +284,7 @@ export function CoachDashboard() {
           <CardContent>
             {teamOccurrences.length === 0 ? (
               <p className="text-sm text-gray-500 text-center py-4">
-                No hay sesiones programadas para este equipo
+                No scheduled sessions for this team
               </p>
             ) : (
               <div className="space-y-2">

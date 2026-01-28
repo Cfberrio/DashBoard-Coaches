@@ -185,7 +185,7 @@ export function AdminDashboard() {
     let htmlContent = `
       <html>
         <head>
-          <title>Reporte de Asistencia - Admin Dashboard</title>
+          <title>Attendance Report - Admin Dashboard</title>
           <style>
             body { font-family: Arial, sans-serif; margin: 20px; }
             .header { text-align: center; margin-bottom: 30px; }

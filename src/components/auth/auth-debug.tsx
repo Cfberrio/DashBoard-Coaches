@@ -82,7 +82,7 @@ export function AuthDebug() {
 
       if (!staffData) {
         testResults.recommendations.push(
-          "No se encontró registro de staff con este email. Verifica que el coach esté creado en la tabla staff."
+          "No staff record found with this email. Verify that the coach is created in the staff table."
         );
       }
 

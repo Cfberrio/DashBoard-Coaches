@@ -108,7 +108,7 @@ export function TeamOverview({ teams }: TeamOverviewProps) {
                 </Button>
                 <Button variant="outline" size="sm">
                   <Clock className="mr-2 h-4 w-4" />
-                  Marcar Asistencia
+                  Mark Attendance
                 </Button>
               </div>
             </CardContent>

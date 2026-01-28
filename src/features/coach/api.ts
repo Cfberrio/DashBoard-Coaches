@@ -17,7 +17,7 @@ export async function getCurrentStaff(): Promise<Staff> {
   } = await supabase.auth.getUser();
 
   if (authErr || !user) {
-    throw new Error("No hay usuario autenticado");
+    throw new Error("No authenticated user");
   }
 
   // Buscar staff por id (usando el id del usuario autenticado)
@@ -30,10 +30,10 @@ export async function getCurrentStaff(): Promise<Staff> {
   if (error) {
     if (error.code === "PGRST116") {
       throw new Error(
-        "No se encontró registro de staff para el usuario actual"
+        "No staff record found for the current user"
       );
     }
-    throw new Error(`Error al obtener datos del staff: ${error.message}`);
+    throw new Error(`Error fetching staff data: ${error.message}`);
   }
 
   return data as Staff;
@@ -50,7 +50,7 @@ export async function getMyTeams(): Promise<TeamWithSchool[]> {
     error: authErr,
   } = await supabase.auth.getUser();
   if (authErr || !user) {
-    throw new Error("No hay usuario autenticado");
+    throw new Error("No authenticated user");
   }
 
   // Get staff record to find staff ID
@@ -61,7 +61,7 @@ export async function getMyTeams(): Promise<TeamWithSchool[]> {
     .single();
 
   if (staffError || !staffData) {
-    throw new Error("No se encontró registro de staff");
+    throw new Error("Staff record not found");
   }
 
   // Get team IDs from sessions where this coach is assigned
@@ -72,7 +72,7 @@ export async function getMyTeams(): Promise<TeamWithSchool[]> {
 
   if (sessionError) {
     throw new Error(
-      `Error al obtener sesiones del coach: ${sessionError.message}`
+      `Error fetching coach sessions: ${sessionError.message}`
     );
   }
 
@@ -110,7 +110,7 @@ export async function getMyTeams(): Promise<TeamWithSchool[]> {
     .order("created_at", { ascending: false });
 
   if (error) {
-    throw new Error(`Error al obtener equipos: ${error.message}`);
+    throw new Error(`Error fetching teams: ${error.message}`);
   }
 
   // Transform to match our TeamWithSchool type
@@ -164,7 +164,7 @@ export async function getUpcomingOccurrencesForTeams(): Promise<
     .order("startdate", { ascending: true });
 
   if (error) {
-    throw new Error(`Error al obtener sesiones: ${error.message}`);
+    throw new Error(`Error fetching sessions: ${error.message}`);
   }
 
   if (!sessions || sessions.length === 0) {
@@ -207,7 +207,7 @@ export async function getUpcomingOccurrencesForTeams(): Promise<
     const location =
       teamWithLocation?.school?.location || "Ubicación no disponible";
 
-    // Obtener el día de la semana de la sesión
+    // Get the day of the week for the session
     const sessionDayOfWeek = dayMap[session.daysofweek.toLowerCase()];
 
     if (sessionDayOfWeek === undefined) {
@@ -316,7 +316,7 @@ export async function getActiveRoster(teamId: string): Promise<Student[]> {
     .eq("isactive", true);
 
   if (error) {
-    throw new Error(`Error al obtener roster: ${error.message}`);
+    throw new Error(`Error fetching roster: ${error.message}`);
   }
 
   // Transform to Student format and sort by lastname
@@ -365,7 +365,7 @@ export async function getAssistanceForOccurrence(
 
   if (error) {
     console.error("❌ Error getting assistance:", error);
-    throw new Error(`Error al obtener asistencia: ${error.message}`);
+    throw new Error(`Error fetching attendance: ${error.message}`);
   }
 
   console.log("📊 Assistance data retrieved:", data?.length || 0, "records");
@@ -464,7 +464,7 @@ export async function getTeamById(
 
   if (error) {
     if (error.code === "PGRST116") return null; // Not found
-    throw new Error(`Error al obtener equipo: ${error.message}`);
+    throw new Error(`Error fetching team: ${error.message}`);
   }
 
   return data as TeamWithSchool;
@@ -484,7 +484,7 @@ export async function getStudentById(
 
   if (error) {
     if (error.code === "PGRST116") return null; // Not found
-    throw new Error(`Error al obtener estudiante: ${error.message}`);
+    throw new Error(`Error fetching student: ${error.message}`);
   }
 
   return data as Student;

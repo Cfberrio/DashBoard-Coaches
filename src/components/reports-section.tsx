@@ -77,7 +77,7 @@ export function ReportsSection() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <FileText className="h-5 w-5" />
-            Reportes Disponibles
+            Available Reports
           </CardTitle>
           <CardDescription>Genera y descarga reportes personalizados para tus equipos</CardDescription>
         </CardHeader>
@@ -125,10 +125,10 @@ export function ReportsSection() {
               <div>
                 <label className="text-sm font-medium text-foreground">Tipo de Reporte</label>
                 <select className="w-full mt-1 px-3 py-2 border border-border rounded-md bg-background text-foreground">
-                  <option>Asistencia</option>
-                  <option>Rendimiento</option>
-                  <option>Equipos</option>
-                  <option>Personalizado</option>
+                  <option>Attendance</option>
+                  <option>Performance</option>
+                  <option>Teams</option>
+                  <option>Custom</option>
                 </select>
               </div>
               <div>

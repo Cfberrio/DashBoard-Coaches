@@ -48,7 +48,7 @@ export function AttendanceTracker() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-foreground mb-2">Control de Asistencia</h2>
+          <h2 className="text-2xl font-bold text-foreground mb-2">Attendance Control</h2>
           <p className="text-muted-foreground">Registra y supervisa la asistencia de tus jugadores</p>
         </div>
         <div className="flex items-center gap-4">
@@ -130,7 +130,7 @@ export function AttendanceTracker() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Users className="h-5 w-5" />
-                Juvenil A - Lista de Asistencia
+                Youth A - Attendance List
               </CardTitle>
               <CardDescription>
                 {juvenilAPlayers.filter((p) => p.status === "present").length} de {juvenilAPlayers.length} jugadores
@@ -181,7 +181,7 @@ export function AttendanceTracker() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Users className="h-5 w-5" />
-                Infantil B - Lista de Asistencia
+                Kids B - Attendance List
               </CardTitle>
               <CardDescription>
                 {infantilBPlayers.filter((p) => p.status === "present").length} de {infantilBPlayers.length} jugadores
