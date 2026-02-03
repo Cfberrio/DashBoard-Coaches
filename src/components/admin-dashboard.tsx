@@ -15,10 +15,12 @@ import {
   Clock,
   ChevronDown,
   ChevronRight,
-  Mail
+  Mail,
+  MessageSquare
 } from "lucide-react";
 import { useAllTeams, useAttendanceReport, useAttendanceStats } from "@/features/admin/hooks";
 import { CoachEmailCampaign } from "@/components/marketing/coach-email-campaign";
+import { AdminMessagesTab } from "@/components/admin/AdminMessagesTab";
 
 interface AttendanceRecord {
   id?: string;
@@ -67,7 +69,7 @@ export function AdminDashboard() {
   const [expandedTeams, setExpandedTeams] = useState<Set<string>>(new Set());
   const [expandedSessions, setExpandedSessions] = useState<Set<string>>(new Set());
 
-  const { teams } = useAllTeams();
+  const { data: teams = [] } = useAllTeams();
   const { attendance, isLoading: attendanceLoading } = useAttendanceReport();
   const { stats, isLoading: statsLoading } = useAttendanceStats();
 
@@ -301,7 +303,7 @@ export function AdminDashboard() {
             Admin Dashboard
           </h1>
           <p className="text-gray-600">
-            Manage attendance and email campaigns
+            Manage attendance, email campaigns, and messages
           </p>
         </div>
       </div>
@@ -316,6 +318,10 @@ export function AdminDashboard() {
           <TabsTrigger value="email-campaigns" className="flex items-center gap-2">
             <Mail className="h-4 w-4" />
             Email Campaigns
+          </TabsTrigger>
+          <TabsTrigger value="messages" className="flex items-center gap-2">
+            <MessageSquare className="h-4 w-4" />
+            Messages
           </TabsTrigger>
         </TabsList>
 
@@ -666,6 +672,11 @@ export function AdminDashboard() {
         {/* Email Campaigns Tab */}
         <TabsContent value="email-campaigns" className="mt-6">
           <CoachEmailCampaign />
+        </TabsContent>
+
+        {/* Messages Tab */}
+        <TabsContent value="messages" className="mt-6">
+          <AdminMessagesTab />
         </TabsContent>
       </Tabs>
     </div>

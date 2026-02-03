@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   getAllTeams,
   getAllTeamsAttendanceReport,
@@ -13,32 +14,19 @@ import {
   Team,
 } from "../coach/types";
 
+// Export messaging hooks
+export * from './messaging-hooks';
+
 /**
- * Hook to get all teams for admin dashboard
+ * Hook to get all teams for admin dashboard using React Query
  */
 export function useAllTeams() {
-  const [teams, setTeams] = useState<TeamWithSchool[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchTeams = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
-        const data = await getAllTeams();
-        setTeams(data);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Error loading teams");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchTeams();
-  }, []);
-
-  return { teams, isLoading, error, refetch: () => setIsLoading(true) };
+  return useQuery({
+    queryKey: ["admin", "teams"],
+    queryFn: getAllTeams,
+    staleTime: 2 * 60 * 1000, // 2 minutes
+    retry: 1,
+  });
 }
 
 /**

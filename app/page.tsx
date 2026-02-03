@@ -3,7 +3,6 @@
 import { useAuth } from "@/features/auth/useAuth";
 import { OTPLogin } from "@/components/auth/otp-login";
 import { CoachDashboard } from "@/components/coach-dashboard";
-import { CoachDataProvider } from "@/features/coach/wiring";
 import { useCurrentCoachId } from "@/features/coach/messaging-hooks";
 import { useCoachNotifications } from "@/hooks/useCoachNotifications";
 import { UnreadBadge } from "@/components/notifications/UnreadBadge";
@@ -104,10 +103,8 @@ export default function Home() {
 
   // Si está autenticado, mostrar dashboard
   return (
-    <CoachDataProvider>
-      <div className="min-h-screen bg-gray-50" suppressHydrationWarning>
-        <DashboardWithNotifications />
-      </div>
-    </CoachDataProvider>
+    <div className="min-h-screen bg-gray-50" suppressHydrationWarning>
+      <DashboardWithNotifications />
+    </div>
   );
 }
