@@ -26,6 +26,10 @@ export interface ConversationMessage {
   created_at: string;
   coach_name?: string;
   parent_name?: string;
+  attachment_url?: string | null;
+  attachment_name?: string | null;
+  attachment_type?: string | null;
+  attachment_size?: number | null;
 }
 
 /**
@@ -135,6 +139,10 @@ export async function getConversationMessages(
         coachid,
         body,
         created_at,
+        attachment_url,
+        attachment_name,
+        attachment_type,
+        attachment_size,
         coach:coachid(
           name
         ),
@@ -174,6 +182,10 @@ export async function getConversationMessages(
         parent_name: parent 
           ? `${parent.firstname || ""} ${parent.lastname || ""}`.trim() || "Unknown Parent"
           : "Unknown Parent",
+        attachment_url: msg.attachment_url || null,
+        attachment_name: msg.attachment_name || null,
+        attachment_type: msg.attachment_type || null,
+        attachment_size: msg.attachment_size || null,
       };
     });
   } catch (error) {

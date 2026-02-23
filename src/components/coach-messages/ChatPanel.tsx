@@ -1,6 +1,6 @@
 /**
  * ChatPanel Component
- * Main chat interface with realtime updates
+ * Main chat interface with realtime updates and media attachments
  */
 
 "use client";
@@ -8,9 +8,11 @@
 import { useEffect, useRef, useState } from "react";
 import { useTeamMessages, useSendMessage } from "@/features/coach/messaging-hooks";
 import { Message } from "@/features/coach/messaging-types";
+import { uploadAttachment, isImageType, formatFileSize } from "@/lib/uploadAttachment";
 import { MessageBubble } from "./MessageBubble";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Paperclip, X, ImageIcon, VideoIcon, FileIcon, Loader2 } from "lucide-react";
 
 interface ChatPanelProps {
   teamId: string;
@@ -21,8 +23,13 @@ interface ChatPanelProps {
 
 export function ChatPanel({ teamId, parentId, parentName, coachId }: ChatPanelProps) {
   const [text, setText] = useState("");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [filePreviewUrl, setFilePreviewUrl] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const [optimisticMessages, setOptimisticMessages] = useState<Message[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Get messages with realtime updates
   const {
@@ -46,7 +53,6 @@ export function ChatPanel({ teamId, parentId, parentName, coachId }: ChatPanelPr
   // Clear optimistic messages when server message arrives
   useEffect(() => {
     if (optimisticMessages.length > 0 && messages.length > 0) {
-      // Remove optimistic messages that now exist in server messages
       setOptimisticMessages((prev) =>
         prev.filter(
           (optMsg) => !messages.some((serverMsg) => serverMsg.body === optMsg.body)
@@ -55,13 +61,57 @@ export function ChatPanel({ teamId, parentId, parentName, coachId }: ChatPanelPr
     }
   }, [messages, optimisticMessages.length]);
 
+  // Cleanup file preview URL on unmount or file change
+  useEffect(() => {
+    return () => {
+      if (filePreviewUrl) {
+        URL.revokeObjectURL(filePreviewUrl);
+      }
+    };
+  }, [filePreviewUrl]);
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadError(null);
+
+    // Validate file size (25MB)
+    if (file.size > 25 * 1024 * 1024) {
+      setUploadError(`File is too large (${formatFileSize(file.size)}). Maximum size is 25MB.`);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      return;
+    }
+
+    setSelectedFile(file);
+
+    // Create preview for images
+    if (isImageType(file.type)) {
+      setFilePreviewUrl(URL.createObjectURL(file));
+    } else {
+      setFilePreviewUrl(null);
+    }
+  };
+
+  const handleRemoveFile = () => {
+    if (filePreviewUrl) {
+      URL.revokeObjectURL(filePreviewUrl);
+    }
+    setSelectedFile(null);
+    setFilePreviewUrl(null);
+    setUploadError(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
   const handleSendMessage = async () => {
     const body = text.trim();
+    const hasFile = !!selectedFile;
 
-    if (!body || sendMessageMutation.isPending) return;
+    if ((!body && !hasFile) || sendMessageMutation.isPending || isUploading) return;
 
     // Clear input immediately
     setText("");
+    setUploadError(null);
 
     // Create optimistic message
     const tempMessage: Message = {
@@ -72,21 +122,51 @@ export function ChatPanel({ teamId, parentId, parentName, coachId }: ChatPanelPr
       coachid: coachId,
       body,
       created_at: new Date().toISOString(),
+      // Use local preview URL for optimistic display
+      ...(selectedFile && filePreviewUrl && isImageType(selectedFile.type) && {
+        attachment_url: filePreviewUrl,
+        attachment_name: selectedFile.name,
+        attachment_type: selectedFile.type,
+        attachment_size: selectedFile.size,
+      }),
     };
 
-    // Add to optimistic messages
     setOptimisticMessages((prev) => [...prev, tempMessage]);
 
     try {
+      let attachmentData = null;
+
+      // Upload file if present
+      if (hasFile) {
+        setIsUploading(true);
+        try {
+          attachmentData = await uploadAttachment(selectedFile!, coachId);
+        } catch (uploadErr: any) {
+          console.error("Error uploading attachment:", uploadErr);
+          setUploadError(uploadErr.message || "Failed to upload file");
+          setIsUploading(false);
+          // Revert optimistic update
+          setOptimisticMessages((prev) => prev.filter((m) => m.id !== tempMessage.id));
+          setText(body);
+          return;
+        }
+        setIsUploading(false);
+      }
+
+      // Clear file state before sending
+      handleRemoveFile();
+
       // Send message to server
-      await sendMessageMutation.mutateAsync({ teamId, parentId, coachId, body });
+      await sendMessageMutation.mutateAsync({
+        teamId,
+        parentId,
+        coachId,
+        body,
+        attachment: attachmentData,
+      });
     } catch (error) {
       console.error("Error sending message:", error);
-      // Revert optimistic update on error
-      setOptimisticMessages((prev) =>
-        prev.filter((m) => m.id !== tempMessage.id)
-      );
-      // Restore text so user can retry
+      setOptimisticMessages((prev) => prev.filter((m) => m.id !== tempMessage.id));
       setText(body);
       alert("Error sending message. Please try again.");
     }
@@ -97,6 +177,13 @@ export function ChatPanel({ teamId, parentId, parentName, coachId }: ChatPanelPr
       e.preventDefault();
       handleSendMessage();
     }
+  };
+
+  const getFileIcon = () => {
+    if (!selectedFile) return <FileIcon className="h-4 w-4" />;
+    if (isImageType(selectedFile.type)) return <ImageIcon className="h-4 w-4" />;
+    if (selectedFile.type.startsWith("video/")) return <VideoIcon className="h-4 w-4" />;
+    return <FileIcon className="h-4 w-4" />;
   };
 
   if (isLoading) {
@@ -115,6 +202,9 @@ export function ChatPanel({ teamId, parentId, parentName, coachId }: ChatPanelPr
       </div>
     );
   }
+
+  const isBusy = sendMessageMutation.isPending || isUploading;
+  const canSend = (text.trim() || selectedFile) && !isBusy;
 
   return (
     <div className="border rounded-lg shadow-sm bg-white">
@@ -161,27 +251,93 @@ export function ChatPanel({ teamId, parentId, parentName, coachId }: ChatPanelPr
         )}
       </div>
 
+      {/* File preview area */}
+      {selectedFile && (
+        <div className="px-4 pt-3 border-t bg-gray-50">
+          <div className="flex items-center gap-3 p-2 bg-white rounded-lg border">
+            {/* Image thumbnail preview */}
+            {filePreviewUrl && isImageType(selectedFile.type) ? (
+              <img
+                src={filePreviewUrl}
+                alt="Preview"
+                className="h-12 w-12 rounded object-cover"
+              />
+            ) : (
+              <div className="h-12 w-12 rounded bg-gray-100 flex items-center justify-center">
+                {getFileIcon()}
+              </div>
+            )}
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium truncate">{selectedFile.name}</p>
+              <p className="text-xs text-gray-500">{formatFileSize(selectedFile.size)}</p>
+            </div>
+            <button
+              onClick={handleRemoveFile}
+              className="p-1 hover:bg-gray-100 rounded"
+              disabled={isBusy}
+            >
+              <X className="h-4 w-4 text-gray-500" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Upload error */}
+      {uploadError && (
+        <div className="px-4 pt-2">
+          <p className="text-xs text-red-600">{uploadError}</p>
+        </div>
+      )}
+
       {/* Input area */}
       <div className="p-4 border-t bg-gray-50">
         <div className="flex gap-2">
+          {/* Hidden file input */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*,video/*"
+            onChange={handleFileSelect}
+            className="hidden"
+          />
+          {/* Attachment button */}
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isBusy}
+            title="Attach photo or video"
+          >
+            <Paperclip className="h-4 w-4" />
+          </Button>
           <Input
             type="text"
             placeholder={`Write a message to ${parentName}...`}
             value={text}
             onChange={(e) => setText(e.target.value)}
             onKeyDown={handleKeyDown}
-            disabled={sendMessageMutation.isPending}
+            disabled={isBusy}
             className="flex-1"
           />
           <Button
             onClick={handleSendMessage}
-            disabled={!text.trim() || sendMessageMutation.isPending}
+            disabled={!canSend}
           >
-            {sendMessageMutation.isPending ? "Sending..." : "Send"}
+            {isUploading ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                Uploading...
+              </>
+            ) : sendMessageMutation.isPending ? (
+              "Sending..."
+            ) : (
+              "Send"
+            )}
           </Button>
         </div>
         <p className="text-xs text-gray-500 mt-2">
-          Press Enter to send, or click the Send button
+          Press Enter to send. Click <Paperclip className="h-3 w-3 inline" /> to attach a photo or video (max 25MB).
         </p>
       </div>
     </div>

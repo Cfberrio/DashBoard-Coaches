@@ -4,6 +4,7 @@
  */
 
 import { Message } from "@/features/coach/messaging-types";
+import { AttachmentDisplay } from "./AttachmentDisplay";
 
 interface MessageBubbleProps {
   message: Message;
@@ -12,6 +13,7 @@ interface MessageBubbleProps {
 
 export function MessageBubble({ message, isTemp = false }: MessageBubbleProps) {
   const isCoach = message.sender_role === "coach";
+  const hasAttachment = !!message.attachment_url;
 
   // Format timestamp
   const formattedDate = new Date(message.created_at).toLocaleString("en-US", {
@@ -35,9 +37,20 @@ export function MessageBubble({ message, isTemp = false }: MessageBubbleProps) {
         <div className="text-xs opacity-75 mb-1">
           {isCoach ? "You" : "Parent"} • {formattedDate}
         </div>
-        <div className="text-sm whitespace-pre-wrap break-words">
-          {message.body}
-        </div>
+        {message.body && (
+          <div className="text-sm whitespace-pre-wrap break-words">
+            {message.body}
+          </div>
+        )}
+        {hasAttachment && (
+          <AttachmentDisplay
+            url={message.attachment_url!}
+            name={message.attachment_name || "Attachment"}
+            type={message.attachment_type}
+            size={message.attachment_size}
+            isCoach={isCoach}
+          />
+        )}
         {isTemp && (
           <div className="text-xs opacity-75 mt-1 italic">Sending...</div>
         )}

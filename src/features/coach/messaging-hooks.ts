@@ -160,12 +160,19 @@ export function useSendMessage() {
       parentId,
       coachId,
       body,
+      attachment,
     }: {
       teamId: string;
       parentId: string;
       coachId: string;
       body: string;
-    }) => sendCoachMessage(teamId, parentId, coachId, body),
+      attachment?: {
+        attachment_url: string;
+        attachment_name: string;
+        attachment_type: string;
+        attachment_size: number;
+      } | null;
+    }) => sendCoachMessage(teamId, parentId, coachId, body, attachment),
     onSuccess: (newMessage, variables) => {
       console.log("✅ Message sent successfully:", newMessage);
       
@@ -274,11 +281,18 @@ export function useSendBroadcast() {
       teamId,
       coachId,
       body,
+      attachment,
     }: {
       teamId: string;
       coachId: string;
       body: string;
-    }) => sendBroadcastMessage(teamId, coachId, body),
+      attachment?: {
+        attachment_url: string;
+        attachment_name: string;
+        attachment_type: string;
+        attachment_size: number;
+      } | null;
+    }) => sendBroadcastMessage(teamId, coachId, body, attachment),
     onSuccess: (_, variables) => {
       // Invalidate broadcasts query for this team
       queryClient.invalidateQueries({

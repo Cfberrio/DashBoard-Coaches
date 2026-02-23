@@ -12,7 +12,11 @@ export interface Message {
   coachid: string | null;
   body: string;
   created_at: string;
-  broadcast_id?: string | null;  // NUEVO CAMPO: UUID compartido por mensajes broadcast
+  broadcast_id?: string | null;
+  attachment_url?: string | null;
+  attachment_name?: string | null;
+  attachment_type?: string | null;
+  attachment_size?: number | null;
 }
 
 export interface CoachTeam {
@@ -41,8 +45,12 @@ export interface MessageInsert {
   teamid: string;
   sender_role: 'coach';
   coachid: string;
-  parentid: string;  // Now required - ID of the parent in 1-on-1 conversation
+  parentid: string;
   body: string;
+  attachment_url?: string | null;
+  attachment_name?: string | null;
+  attachment_type?: string | null;
+  attachment_size?: number | null;
 }
 
 // Nuevo tipo para insert de mensaje broadcast

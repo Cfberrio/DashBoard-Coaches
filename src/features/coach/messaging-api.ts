@@ -198,13 +198,19 @@ export async function sendCoachMessage(
   teamId: string,
   parentId: string,
   coachId: string,
-  body: string
+  body: string,
+  attachment?: {
+    attachment_url: string;
+    attachment_name: string;
+    attachment_type: string;
+    attachment_size: number;
+  } | null
 ): Promise<Message> {
-  // Validate inputs
+  // Validate inputs - body can be empty if there's an attachment
   const trimmedBody = body.trim();
 
-  if (!trimmedBody) {
-    throw new Error("Message body cannot be empty");
+  if (!trimmedBody && !attachment) {
+    throw new Error("Message body or attachment is required");
   }
 
   if (!teamId || !coachId || !parentId) {
@@ -214,10 +220,16 @@ export async function sendCoachMessage(
   // Prepare message insert data
   const messageData: MessageInsert = {
     teamid: teamId,
-    sender_role: "coach", // EXACTLY 'coach', not 'staff'
-    coachid: coachId, // Must have value
-    parentid: parentId, // ID of the parent in this 1-on-1 conversation
+    sender_role: "coach",
+    coachid: coachId,
+    parentid: parentId,
     body: trimmedBody,
+    ...(attachment && {
+      attachment_url: attachment.attachment_url,
+      attachment_name: attachment.attachment_name,
+      attachment_type: attachment.attachment_type,
+      attachment_size: attachment.attachment_size,
+    }),
   };
 
   // Insert message
@@ -271,12 +283,18 @@ export async function getParentById(parentId: string): Promise<{
 export async function sendBroadcastMessage(
   teamId: string,
   coachId: string,
-  body: string
+  body: string,
+  attachment?: {
+    attachment_url: string;
+    attachment_name: string;
+    attachment_type: string;
+    attachment_size: number;
+  } | null
 ): Promise<{ broadcast_id: string; sent_count: number }> {
   const trimmedBody = body.trim();
 
-  if (!trimmedBody) {
-    throw new Error("Message body cannot be empty");
+  if (!trimmedBody && !attachment) {
+    throw new Error("Message body or attachment is required");
   }
 
   if (!teamId || !coachId) {
@@ -301,6 +319,12 @@ export async function sendBroadcastMessage(
     parentid: parent.parentid,
     body: trimmedBody,
     broadcast_id: broadcast_id,
+    ...(attachment && {
+      attachment_url: attachment.attachment_url,
+      attachment_name: attachment.attachment_name,
+      attachment_type: attachment.attachment_type,
+      attachment_size: attachment.attachment_size,
+    }),
   }));
 
   // 4. Insert all messages at once

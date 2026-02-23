@@ -38,7 +38,7 @@ export function TeamSelector({ teams, selected, onChange }: TeamSelectorProps) {
         </option>
         {teams.map((team) => (
           <option key={team.teamid} value={team.teamid}>
-            {team.name} {team.status && `(${team.status})`}
+            {team.name} {team.status && `(${team.status === "ongoing" ? "Current" : team.status === "closed" ? "Ending" : team.status})`}
           </option>
         ))}
       </select>

@@ -1,16 +1,17 @@
 /**
  * BroadcastPanel Component
- * Panel for composing and sending broadcast messages to entire team
+ * Panel for composing and sending broadcast messages (with attachments) to entire team
  */
 
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSendBroadcast, useParentsByTeam } from "@/features/coach/messaging-hooks";
+import { uploadAttachment, isImageType, formatFileSize } from "@/lib/uploadAttachment";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { CheckCircle2, Users } from "lucide-react";
+import { CheckCircle2, Users, Paperclip, X, ImageIcon, VideoIcon, FileIcon, Loader2 } from "lucide-react";
 
 interface BroadcastPanelProps {
   teamId: string;
@@ -19,19 +20,94 @@ interface BroadcastPanelProps {
 
 export function BroadcastPanel({ teamId, coachId }: BroadcastPanelProps) {
   const [message, setMessage] = useState("");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [filePreviewUrl, setFilePreviewUrl] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { data: parents = [] } = useParentsByTeam(teamId);
   const sendBroadcast = useSendBroadcast();
 
+  // Cleanup file preview URL on unmount or file change
+  useEffect(() => {
+    return () => {
+      if (filePreviewUrl) {
+        URL.revokeObjectURL(filePreviewUrl);
+      }
+    };
+  }, [filePreviewUrl]);
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadError(null);
+
+    if (file.size > 25 * 1024 * 1024) {
+      setUploadError(`File is too large (${formatFileSize(file.size)}). Maximum size is 25MB.`);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      return;
+    }
+
+    setSelectedFile(file);
+
+    if (isImageType(file.type)) {
+      setFilePreviewUrl(URL.createObjectURL(file));
+    } else {
+      setFilePreviewUrl(null);
+    }
+  };
+
+  const handleRemoveFile = () => {
+    if (filePreviewUrl) {
+      URL.revokeObjectURL(filePreviewUrl);
+    }
+    setSelectedFile(null);
+    setFilePreviewUrl(null);
+    setUploadError(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const getFileIcon = () => {
+    if (!selectedFile) return <FileIcon className="h-4 w-4" />;
+    if (isImageType(selectedFile.type)) return <ImageIcon className="h-4 w-4" />;
+    if (selectedFile.type.startsWith("video/")) return <VideoIcon className="h-4 w-4" />;
+    return <FileIcon className="h-4 w-4" />;
+  };
+
   const handleSend = async () => {
-    if (!message.trim() || sendBroadcast.isPending) return;
+    const hasText = message.trim().length > 0;
+    const hasFile = !!selectedFile;
+
+    if ((!hasText && !hasFile) || sendBroadcast.isPending || isUploading) return;
+
+    setUploadError(null);
 
     try {
-      const result = await sendBroadcast.mutateAsync({
+      let attachmentData = null;
+
+      if (hasFile) {
+        setIsUploading(true);
+        try {
+          attachmentData = await uploadAttachment(selectedFile!, coachId);
+        } catch (uploadErr: any) {
+          console.error("Error uploading attachment:", uploadErr);
+          setUploadError(uploadErr.message || "Failed to upload file");
+          setIsUploading(false);
+          return;
+        }
+        setIsUploading(false);
+      }
+
+      handleRemoveFile();
+
+      await sendBroadcast.mutateAsync({
         teamId,
         coachId,
         body: message.trim(),
+        attachment: attachmentData,
       });
 
       setMessage("");
@@ -42,6 +118,9 @@ export function BroadcastPanel({ teamId, coachId }: BroadcastPanelProps) {
       alert("Error sending message. Please try again.");
     }
   };
+
+  const isBusy = sendBroadcast.isPending || isUploading;
+  const canSend = (message.trim() || selectedFile) && !isBusy && parents.length > 0;
 
   return (
     <div className="space-y-4">
@@ -69,20 +148,80 @@ export function BroadcastPanel({ teamId, coachId }: BroadcastPanelProps) {
         placeholder="Write your message for the entire team..."
         value={message}
         onChange={(e) => setMessage(e.target.value)}
-        disabled={sendBroadcast.isPending}
+        disabled={isBusy}
         className="min-h-32"
       />
 
-      {/* Send button */}
-      <Button
-        onClick={handleSend}
-        disabled={!message.trim() || sendBroadcast.isPending || parents.length === 0}
-        className="w-full"
-      >
-        {sendBroadcast.isPending
-          ? "Sending..."
-          : `Send to ${parents.length} parents`}
-      </Button>
+      {/* File preview */}
+      {selectedFile && (
+        <div className="flex items-center gap-3 p-2 bg-white rounded-lg border">
+          {filePreviewUrl && isImageType(selectedFile.type) ? (
+            <img
+              src={filePreviewUrl}
+              alt="Preview"
+              className="h-12 w-12 rounded object-cover"
+            />
+          ) : (
+            <div className="h-12 w-12 rounded bg-gray-100 flex items-center justify-center">
+              {getFileIcon()}
+            </div>
+          )}
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium truncate">{selectedFile.name}</p>
+            <p className="text-xs text-gray-500">{formatFileSize(selectedFile.size)}</p>
+          </div>
+          <button
+            onClick={handleRemoveFile}
+            className="p-1 hover:bg-gray-100 rounded"
+            disabled={isBusy}
+          >
+            <X className="h-4 w-4 text-gray-500" />
+          </button>
+        </div>
+      )}
+
+      {/* Upload error */}
+      {uploadError && (
+        <p className="text-xs text-red-600">{uploadError}</p>
+      )}
+
+      {/* Hidden file input */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*,video/*"
+        onChange={handleFileSelect}
+        className="hidden"
+      />
+
+      {/* Action buttons */}
+      <div className="flex gap-2">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={isBusy}
+        >
+          <Paperclip className="h-4 w-4 mr-2" />
+          Attach
+        </Button>
+        <Button
+          onClick={handleSend}
+          disabled={!canSend}
+          className="flex-1"
+        >
+          {isUploading ? (
+            <>
+              <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+              Uploading...
+            </>
+          ) : sendBroadcast.isPending ? (
+            "Sending..."
+          ) : (
+            `Send to ${parents.length} parents`
+          )}
+        </Button>
+      </div>
 
       {parents.length === 0 && (
         <p className="text-sm text-amber-600">

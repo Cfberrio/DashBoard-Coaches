@@ -4,11 +4,19 @@ const nextConfig: NextConfig = {
   experimental: {
     optimizePackageImports: ["@tanstack/react-query"],
   },
-  // Configuración para mejorar la hidratación
+  // Improve hydration
   reactStrictMode: true,
-  // Configuración para evitar problemas de hidratación
+  // Allow loading images from Supabase Storage
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "tdyyjoyotvzgbeowtlfv.supabase.co",
+      },
+    ],
+  },
+  // Remove console.log in production
   compiler: {
-    // Remover console.log en producción
     removeConsole: process.env.NODE_ENV === "production",
   },
   // Configuración para manejar extensiones del navegador
