@@ -277,13 +277,15 @@ export async function getParentById(parentId: string): Promise<{
 }
 
 /**
- * Send broadcast message to all parents in a team
- * Creates one message record per parent, all sharing the same broadcast_id
+ * Send broadcast message to all parents in a team.
+ * Accepts pre-fetched parentIds to avoid a duplicate DB query.
+ * Creates one message record per parent, all sharing the same broadcast_id.
  */
 export async function sendBroadcastMessage(
   teamId: string,
   coachId: string,
   body: string,
+  parentIds: string[],
   attachment?: {
     attachment_url: string;
     attachment_name: string;
@@ -301,22 +303,17 @@ export async function sendBroadcastMessage(
     throw new Error("Missing required fields");
   }
 
-  // 1. Get all parents for this team
-  const parents = await getParentsByTeam(teamId);
-
-  if (parents.length === 0) {
+  if (parentIds.length === 0) {
     throw new Error("No parents found for this team");
   }
 
-  // 2. Generate a unique broadcast_id
   const broadcast_id = crypto.randomUUID();
 
-  // 3. Create message records for each parent
-  const messageInserts = parents.map((parent) => ({
+  const messageInserts = parentIds.map((parentId) => ({
     teamid: teamId,
     sender_role: "coach" as const,
     coachid: coachId,
-    parentid: parent.parentid,
+    parentid: parentId,
     body: trimmedBody,
     broadcast_id: broadcast_id,
     ...(attachment && {
@@ -327,15 +324,12 @@ export async function sendBroadcastMessage(
     }),
   }));
 
-  // 4. Insert all messages at once
-  const { data, error } = await supabase
+  const { error } = await supabase
     .from("message")
-    .insert(messageInserts)
-    .select();
+    .insert(messageInserts);
 
   if (error) {
     console.error("Error sending broadcast:", error);
-    // Provide helpful error message if migration not run
     if (error.message?.includes("broadcast_id") || error.code === "42703") {
       throw new Error(
         "The broadcast_id column does not exist in the message table. " +
@@ -348,13 +342,13 @@ export async function sendBroadcastMessage(
 
   return {
     broadcast_id,
-    sent_count: data?.length || 0,
+    sent_count: parentIds.length,
   };
 }
 
 /**
- * Get all broadcasts sent by a coach for a specific team
- * Returns unique broadcasts with count of responses
+ * Get all broadcasts sent by a coach for a specific team.
+ * Uses a single query and groups client-side to avoid N+1 query problems.
  */
 export async function getTeamBroadcasts(
   teamId: string,
@@ -364,77 +358,46 @@ export async function getTeamBroadcasts(
     throw new Error("Team ID and Coach ID are required");
   }
 
-  // Get all broadcast messages for this team/coach
-  const { data: broadcasts, error } = await supabase
+  // Single query: fetch only broadcast messages (broadcast_id is not null)
+  const { data: messages, error } = await supabase
     .from("message")
-    .select("*")
+    .select("broadcast_id, teamid, body, created_at, sender_role")
     .eq("teamid", teamId)
     .eq("coachid", coachId)
     .eq("sender_role", "coach")
+    .not("broadcast_id", "is", null)
     .order("created_at", { ascending: false });
 
   if (error) {
     console.error("Error fetching broadcasts:", error);
-    // If column doesn't exist yet (migration not run), return empty array
     if (error.message?.includes("broadcast_id") || error.code === "42703") {
-      console.warn("⚠️ The broadcast_id column does not exist. Run the SQL migration first.");
+      console.warn("broadcast_id column does not exist. Run the SQL migration first.");
       return [];
     }
     throw new Error(`Error loading broadcasts: ${error.message}`);
   }
 
-  if (!broadcasts || broadcasts.length === 0) {
+  if (!messages || messages.length === 0) {
     return [];
   }
 
-  // Filter messages that have broadcast_id (only broadcast messages)
-  const broadcastMessages = broadcasts.filter((msg: any) => msg.broadcast_id != null);
-
-  if (broadcastMessages.length === 0) {
-    return [];
-  }
-
-  // Group by broadcast_id and get first message of each broadcast
+  // Group client-side by broadcast_id
   const broadcastMap = new Map<string, BroadcastInfo>();
 
-  for (const msg of broadcastMessages) {
-    if (msg.broadcast_id && !broadcastMap.has(msg.broadcast_id)) {
-      // Count responses for this broadcast
-      const { count } = await supabase
-        .from("message")
-        .select("*", { count: "exact", head: true })
-        .eq("teamid", teamId)
-        .eq("broadcast_id", msg.broadcast_id)
-        .eq("sender_role", "parent");
-
-      // Get team name
-      const { data: team } = await supabase
-        .from("team")
-        .select("name")
-        .eq("teamid", teamId)
-        .single();
-
-      broadcastMap.set(msg.broadcast_id, {
-        broadcast_id: msg.broadcast_id,
+  for (const msg of messages) {
+    const bid = msg.broadcast_id as string;
+    if (!broadcastMap.has(bid)) {
+      broadcastMap.set(bid, {
+        broadcast_id: bid,
         teamid: msg.teamid,
-        teamname: team?.name || "Unknown Team",
+        teamname: "",
         body: msg.body,
         created_at: msg.created_at,
-        recipient_count: 0, // Will be calculated below
-        response_count: count || 0,
+        recipient_count: 1,
       });
+    } else {
+      broadcastMap.get(bid)!.recipient_count += 1;
     }
-  }
-
-  // Count recipients for each broadcast
-  for (const [broadcast_id, info] of broadcastMap.entries()) {
-    const { count } = await supabase
-      .from("message")
-      .select("*", { count: "exact", head: true })
-      .eq("broadcast_id", broadcast_id)
-      .eq("sender_role", "coach");
-
-    info.recipient_count = count || 0;
   }
 
   return Array.from(broadcastMap.values());

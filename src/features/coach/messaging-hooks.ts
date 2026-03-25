@@ -271,7 +271,8 @@ export function useGlobalMessageNotifications(
 }
 
 /**
- * Hook to send broadcast message to entire team
+ * Hook to send broadcast message to entire team.
+ * Accepts parentIds so the API layer doesn't re-fetch them.
  */
 export function useSendBroadcast() {
   const queryClient = useQueryClient();
@@ -281,20 +282,21 @@ export function useSendBroadcast() {
       teamId,
       coachId,
       body,
+      parentIds,
       attachment,
     }: {
       teamId: string;
       coachId: string;
       body: string;
+      parentIds: string[];
       attachment?: {
         attachment_url: string;
         attachment_name: string;
         attachment_type: string;
         attachment_size: number;
       } | null;
-    }) => sendBroadcastMessage(teamId, coachId, body, attachment),
+    }) => sendBroadcastMessage(teamId, coachId, body, parentIds, attachment),
     onSuccess: (_, variables) => {
-      // Invalidate broadcasts query for this team
       queryClient.invalidateQueries({
         queryKey: ["team-broadcasts", variables.teamId, variables.coachId],
       });

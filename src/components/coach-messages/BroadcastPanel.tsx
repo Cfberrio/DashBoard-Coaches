@@ -107,6 +107,7 @@ export function BroadcastPanel({ teamId, coachId }: BroadcastPanelProps) {
         teamId,
         coachId,
         body: message.trim(),
+        parentIds: parents.map((p) => p.parentid),
         attachment: attachmentData,
       });
 

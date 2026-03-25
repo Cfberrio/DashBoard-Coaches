@@ -62,7 +62,6 @@ export interface BroadcastMessageInsert {
   broadcast_id: string;  // UUID compartido por todo el broadcast
 }
 
-// Nuevo tipo para información de broadcast
 export interface BroadcastInfo {
   broadcast_id: string;
   teamid: string;
@@ -70,5 +69,4 @@ export interface BroadcastInfo {
   body: string;
   created_at: string;
   recipient_count: number;
-  response_count: number;
 }
